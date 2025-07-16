@@ -3,6 +3,8 @@ from aiogram.fsm.context import FSMContext
 from hsk3.states import QuizStates
 from aiogram.types import PollAnswer, CallbackQuery, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from hsk3.intro import get_back_to_types, Sections
 from .services import reading_service
 
 router = Router()
@@ -20,6 +22,7 @@ async def get_reading(callback: CallbackQuery):
     builder.adjust(1)
 
     await callback.message.answer(text, reply_markup=builder.as_markup())
+    await callback.message.delete()
     await callback.answer()
 
 
@@ -80,7 +83,7 @@ async def send_next_question(bot: Bot, chat_id: int, state: FSMContext):
     else:
         await bot.send_message(
             chat_id=chat_id,
-            text=f"Тест завершен! 🎉\nРезультат: {data['score']}/{len(data['questions'])}"
+            text=f"Тест завершен! 🎉\nРезультат: {score}/{len(questions)}"
         )
         await state.clear()
 
@@ -174,7 +177,7 @@ async def send_next_type_three_task(bot: Bot, chat_id: int, state: FSMContext):
             text=f"Тест завершен! 🎉\nРезультат: {data['score']}/{len(tasks)}"
         )
         await state.clear()
-        await get_back_to_types(bot, chat_id)
+        await get_back_to_types(bot, chat_id, section=Sections.reading)
         return
 
     task = tasks[task_index]
@@ -227,13 +230,4 @@ async def handle_type_three_poll_answer(poll_answer: PollAnswer, state: FSMConte
     await send_next_type_three_task(bot, poll_answer.user.id, state)
 
 
-async def get_back_to_types(bot: Bot, chat_id: int):
-    builder = InlineKeyboardBuilder()
 
-    tasks_btn = InlineKeyboardButton(text="ЗАДАНИЯ", callback_data="hsk3_reading")
-    sections_btn = InlineKeyboardButton(text="РАЗДЕЛЫ", callback_data="hsk3")
-
-    builder.add(tasks_btn, sections_btn)
-    builder.adjust(1)
-
-    await bot.send_message(chat_id=chat_id, text="Хотите вернуться?", reply_markup=builder.as_markup())
