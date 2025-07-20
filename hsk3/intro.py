@@ -11,6 +11,7 @@ class Sections:
     reading = "hsk3_reading"
     writing = "hsk3_writing"
     words = "hsk3_words"
+    whole_variant = "hsk3_all"
 
 
 async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None):
@@ -21,7 +22,8 @@ async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None)
         InlineKeyboardButton(text="Аудирование", callback_data=Sections.listening),
         InlineKeyboardButton(text="Чтение", callback_data=Sections.reading),
         InlineKeyboardButton(text="Грамматика", callback_data=Sections.writing),
-        InlineKeyboardButton(text="Лексика", callback_data=Sections.words)
+        InlineKeyboardButton(text="Лексика", callback_data=Sections.words),
+        InlineKeyboardButton(text="Целый вариант", callback_data=Sections.whole_variant)
     ]
 
     builder.add(*buttons)

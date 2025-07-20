@@ -46,3 +46,20 @@ class WritingTaskTypeTwoSchema(BaseModel):
     id: int
     sentence: str
     correct_char: str
+
+
+class ListeningPictureSchema(BaseModel):
+    id: int
+    picture_id: str
+    letter: str
+
+
+class FirstTaskQuestionSchema(BaseModel):
+    id: int
+    correct_letter: str
+
+
+class FirstTaskSchema(BaseModel):
+    id: int
+    pictures: list[ListeningPictureSchema]
+    questions: list[FirstTaskQuestionSchema]

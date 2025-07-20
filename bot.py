@@ -21,6 +21,38 @@ dp = Dispatcher()
 async def cmd_start(message: types.Message):
     await message.answer("Yulu - бот для подготовки к HSK!")
 
+# @dp.message()
+# async def handle_media(message: types.Message):
+#     # Если это фото
+#     if message.photo:
+#         file_id = message.photo[-1].file_id  # Берем самое высокое качество
+#         await message.reply(f"📷 Photo file_id: <code>{file_id}</code>", parse_mode="HTML")
+#
+#     # Если это видео
+#     elif message.video:
+#         file_id = message.video.file_id
+#         await message.reply(f"🎥 Video file_id: <code>{file_id}</code>", parse_mode="HTML")
+#
+#     # Если это аудио
+#     elif message.audio:
+#         file_id = message.audio.file_id
+#         await message.reply(f"🔊 Audio file_id: <code>{file_id}</code>", parse_mode="HTML")
+#
+#     # Если это документ (например, PDF)
+#     elif message.document:
+#         file_id = message.document.file_id
+#         await message.reply(f"📄 Document file_id: <code>{file_id}</code>", parse_mode="HTML")
+#
+#     # Если это голосовое сообщение
+#     elif message.voice:
+#         file_id = message.voice.file_id
+#         await message.reply(f"🎤 Voice file_id: <code>{file_id}</code>", parse_mode="HTML")
+#
+#     # Если это стикер
+#     elif message.sticker:
+#         file_id = message.sticker.file_id
+#         await message.reply(f"😀 Sticker file_id: <code>{file_id}</code>", parse_mode="HTML")
+
 
 # Запуск процесса поллинга новых апдейтов
 async def main():

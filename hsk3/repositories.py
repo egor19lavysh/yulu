@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session, selectinload
 from hsk3.reading_models import *
 from hsk3.writing_models import *
+from hsk3.listening_models import *
 from sqlalchemy import select
 from database import get_db_session
 import random
@@ -59,7 +60,18 @@ class WritingRepository:
             return tasks
 
 
+@dataclass
+class ListeningRepository:
+    db_session: Session
+
+    def get_test_first_task(self):
+        with self.db_session as session:
+            task = session.execute(select(FirstTask).options(selectinload(FirstTask.pictures), selectinload(FirstTask.questions))).scalars().first()
+            return task
+
+
 session = next(get_db_session())
 
 reading_repo = ReadingRepository(session)
 writing_repo = WritingRepository(session)
+listening_repo = ListeningRepository(session)

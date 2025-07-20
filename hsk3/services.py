@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from hsk3.repositories import reading_repo, ReadingRepository, writing_repo, WritingRepository
+from hsk3.repositories import *
 from hsk3.schemas import *
 
 
@@ -16,10 +16,12 @@ class ReadingService:
 
         return ReadingTaskTypeOneSchema(id=task.id,
                                         description=task.description,
-                                        sentence_options=[SentenceOption(id=op.id, letter=op.letter, text=op.text) for op in
-                                                    task.options],
-                                        questions=[ReadingQuestion(id=q.id, text=q.text, correct_letter=q.correct_letter) for
-                                             q in task.questions])
+                                        sentence_options=[SentenceOption(id=op.id, letter=op.letter, text=op.text) for
+                                                          op in
+                                                          task.options],
+                                        questions=[
+                                            ReadingQuestion(id=q.id, text=q.text, correct_letter=q.correct_letter) for
+                                            q in task.questions])
 
     def get_type_two_tasks(self):
         tasks = self.repo.get_type_two_tasks()
@@ -30,19 +32,19 @@ class ReadingService:
         if task:
             return ReadingTaskTypeTwoSchema(id=task.id,
                                             description=task.description,
-                                            sentence_options=[SentenceOption(id=op.id, letter=op.letter, text=op.text) for op
-                                                        in
-                                                        task.options],
-                                            questions=[ReadingQuestion(id=q.id, text=q.text, correct_letter=q.correct_letter)
-                                                 for
-                                                 q in task.questions])
+                                            sentence_options=[SentenceOption(id=op.id, letter=op.letter, text=op.text)
+                                                              for op
+                                                              in
+                                                              task.options],
+                                            questions=[
+                                                ReadingQuestion(id=q.id, text=q.text, correct_letter=q.correct_letter)
+                                                for
+                                                q in task.questions])
         raise Exception("Что-то пошло не так")
 
     def get_random_type_three_tasks(self):
         tasks = self.repo.get_random_type_three_tasks()
         return tasks
-
-reading_service = ReadingService(repo=reading_repo)
 
 
 @dataclass
@@ -59,4 +61,20 @@ class WritingService:
         orm_tasks = [WritingTaskTypeTwoSchema.model_validate(task, from_attributes=True) for task in tasks]
         return orm_tasks
 
-writing_service = WritingService(writing_repo)
+
+@dataclass
+class ListeningService:
+    repo: ListeningRepository
+
+    def get_test_first_task(self):
+        task = self.repo.get_test_first_task()
+        orm_task = FirstTaskSchema(id=task.id,
+                                   pictures=[ListeningPictureSchema.model_validate(pic, from_attributes=True) for pic in task.pictures],
+                                   questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions])
+        return orm_task
+
+
+
+reading_service = ReadingService(repo=reading_repo)
+writing_service = WritingService(repo=writing_repo)
+listening_service = ListeningService(repo=listening_repo)
