@@ -7,3 +7,7 @@ class QuizStates(StatesGroup):
 
 class WritingStates(StatesGroup):
     word = State()
+
+
+class ListeningStates(StatesGroup):
+    answer = State()

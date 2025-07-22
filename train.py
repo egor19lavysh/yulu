@@ -8,7 +8,16 @@ def create_sample_task():
     session = next(get_db_session())
 
     try:
-        print("h")
+        tasks = [SecondTask(text="Текст 2", is_correct=True),
+                 SecondTask(text="Текст 3", is_correct=True),
+                 SecondTask(text="Текст 4", is_correct=False),
+                 SecondTask(text="Текст 5", is_correct=True),
+                 SecondTask(text="Текст 6", is_correct=False)
+                 ]
+
+
+        session.add_all(tasks)
+        session.commit()
     except Exception as e:
         session.rollback()
         print(f"Ошибка: {e}")

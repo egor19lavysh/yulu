@@ -61,5 +61,11 @@ class FirstTaskQuestionSchema(BaseModel):
 
 class FirstTaskSchema(BaseModel):
     id: int
-    pictures: list[ListeningPictureSchema]
+    picture_id: str
     questions: list[FirstTaskQuestionSchema]
+
+
+class SecondTaskSchema(BaseModel):
+    id: int
+    text: str
+    is_correct: bool

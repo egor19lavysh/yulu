@@ -69,9 +69,14 @@ class ListeningService:
     def get_test_first_task(self):
         task = self.repo.get_test_first_task()
         orm_task = FirstTaskSchema(id=task.id,
-                                   pictures=[ListeningPictureSchema.model_validate(pic, from_attributes=True) for pic in task.pictures],
+                                   picture_id=task.picture_id,
                                    questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions])
         return orm_task
+
+    def get_test_second_tasks(self):
+        tasks = self.repo.get_test_second_tasks()
+        orm_tasks = [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
+        return orm_tasks
 
 
 

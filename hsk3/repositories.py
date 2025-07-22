@@ -66,8 +66,18 @@ class ListeningRepository:
 
     def get_test_first_task(self):
         with self.db_session as session:
-            task = session.execute(select(FirstTask).options(selectinload(FirstTask.pictures), selectinload(FirstTask.questions))).scalars().first()
+            task = session.execute(select(FirstTask).options(selectinload(FirstTask.questions))).scalars().first()
             return task
+
+    def get_test_second_tasks(self):
+        with self.db_session as session:
+            tasks = session.execute(select(SecondTask).limit(5)).scalars().all()
+            return tasks
+
+    # def get_test_third_tasks(self):
+    #     with self.db_session as session:
+    #         tasks = session.execute(select(ThirdTask).options(selectinload(ThirdTask.)).limit(5)).scalars().all()
+    #         return tasks
 
 
 session = next(get_db_session())

@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters.command import Command
@@ -21,37 +21,25 @@ dp = Dispatcher()
 async def cmd_start(message: types.Message):
     await message.answer("Yulu - бот для подготовки к HSK!")
 
-# @dp.message()
-# async def handle_media(message: types.Message):
-#     # Если это фото
-#     if message.photo:
-#         file_id = message.photo[-1].file_id  # Берем самое высокое качество
-#         await message.reply(f"📷 Photo file_id: <code>{file_id}</code>", parse_mode="HTML")
-#
-#     # Если это видео
-#     elif message.video:
-#         file_id = message.video.file_id
-#         await message.reply(f"🎥 Video file_id: <code>{file_id}</code>", parse_mode="HTML")
-#
-#     # Если это аудио
-#     elif message.audio:
-#         file_id = message.audio.file_id
-#         await message.reply(f"🔊 Audio file_id: <code>{file_id}</code>", parse_mode="HTML")
-#
-#     # Если это документ (например, PDF)
-#     elif message.document:
-#         file_id = message.document.file_id
-#         await message.reply(f"📄 Document file_id: <code>{file_id}</code>", parse_mode="HTML")
-#
-#     # Если это голосовое сообщение
-#     elif message.voice:
-#         file_id = message.voice.file_id
-#         await message.reply(f"🎤 Voice file_id: <code>{file_id}</code>", parse_mode="HTML")
-#
-#     # Если это стикер
-#     elif message.sticker:
-#         file_id = message.sticker.file_id
-#         await message.reply(f"😀 Sticker file_id: <code>{file_id}</code>", parse_mode="HTML")
+
+@dp.message(F.audio | F.photo | F.video)
+async def handle_media(message: types.Message):
+    if message.chat.id == settings.PRIVATE_GROUP_ID:
+        # Если это фото
+        if message.photo:
+            file_id = message.photo[-1].file_id  # Берем самое высокое качество
+            await message.reply(f"📷 Photo file_id: <code>{file_id}</code>", parse_mode="HTML")
+
+        # Если это видео
+        elif message.video:
+            file_id = message.video.file_id
+            await message.reply(f"🎥 Video file_id: <code>{file_id}</code>", parse_mode="HTML")
+
+        # Если это аудио
+        elif message.audio:
+            file_id = message.audio.file_id
+            await message.reply(f"🔊 Audio file_id: <code>{file_id}</code>", parse_mode="HTML")
+
 
 
 # Запуск процесса поллинга новых апдейтов
@@ -59,7 +47,7 @@ async def main():
     for router in hsk3_routers:
         dp.include_router(router)
 
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, allowed_updates=["message", "callback_query", "poll_answer"])
 
 
 if __name__ == "__main__":
