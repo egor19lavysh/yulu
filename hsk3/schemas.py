@@ -69,3 +69,16 @@ class SecondTaskSchema(BaseModel):
     id: int
     text: str
     is_correct: bool
+
+
+class ThirdTaskOptionSchema(BaseModel):
+    id: int
+    letter: str
+    text: str
+
+class ThirdTaskSchema(BaseModel):
+    id: int
+    correct_letter: str
+    options: list[ThirdTaskOptionSchema]
+
+

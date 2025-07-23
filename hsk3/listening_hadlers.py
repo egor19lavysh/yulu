@@ -4,9 +4,9 @@ from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from hsk3.intro import Sections
+from hsk3.intro import Sections, get_back_to_types
 from hsk3.services import listening_service
-from hsk3.states import ListeningStates
+from hsk3.states import ListeningFirstStates, ListeningSecondStates, ListeningThirdStates
 
 router = Router()
 
@@ -32,6 +32,7 @@ SECOND_TASK_TEXT = "<b>Прослушайте и определите, верн�
 TEXT_TRUE = "Правда"
 TEXT_FALSE = "Ложь"
 
+THIRD_TASK_TEXT = "<b>Прослушайте реплики и ответьте на вопрос, выбрав один из трех ответов:</b>"
 
 @router.callback_query(F.data == Sections.listening)
 async def show_task_types(callback: CallbackQuery):
@@ -98,7 +99,7 @@ async def send_next_question(bot: Bot, chat_id: int, state: FSMContext):
         )
 
         # Устанавливаем состояние ожидания ответа
-        await state.set_state(ListeningStates.answer)
+        await state.set_state(ListeningFirstStates.answer)
     else:
         # Завершаем тест
         score = data["score"]
@@ -107,6 +108,7 @@ async def send_next_question(bot: Bot, chat_id: int, state: FSMContext):
             text=TEXT_TASK_COMPLETED.format(score=score, total=len(questions))
         )
         await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.listening)
 
 
 async def handle_listening_answer(poll_answer: PollAnswer, state: FSMContext):
@@ -138,7 +140,7 @@ async def handle_listening_answer(poll_answer: PollAnswer, state: FSMContext):
 
 
 # Обработчик ответов на опросы - ключевая часть!
-@router.poll_answer(ListeningStates.answer)
+@router.poll_answer(ListeningFirstStates.answer)
 async def handle_poll_answer(poll_answer: PollAnswer, state: FSMContext):
     """Обработчик ответов на викторину аудирования."""
     await handle_listening_answer(poll_answer, state)
@@ -194,6 +196,7 @@ async def send_next_truefalse_question(bot: Bot, chat_id: int, state: FSMContext
             text=TEXT_TASK_COMPLETED.format(score=score, total=len(questions))
         )
         await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.listening)
 
 
 @router.callback_query(F.data.startswith(("true_", "false_")))
@@ -233,3 +236,97 @@ async def handle_truefalse_answer(callback: CallbackQuery, state: FSMContext):
     # Отправляем следующий вопрос
     await send_next_truefalse_question(callback.bot, callback.message.chat.id, state)
     await callback.answer()
+
+
+@router.callback_query(F.data == CALLBACK_TYPE_THREE_TASKS)
+async def get_third_task(callback: CallbackQuery, state: FSMContext):
+    tasks = listening_service.get_test_third_tasks()  # Получаем список задач
+
+    if not tasks:
+        await callback.message.answer("Извините, задачи временно недоступны.")
+        return
+
+    # Подготавливаем данные для состояния
+    tasks_data = []
+    for task in tasks:
+        options = {opt.letter: opt.text for opt in task.options}
+        tasks_data.append({
+            'task_id': task.id,
+            'correct_letter': task.correct_letter,
+            'options': options
+        })
+
+    await callback.message.answer(text=THIRD_TASK_TEXT)
+
+    await state.update_data(
+        current_index=0,
+        tasks=tasks_data,
+        score=0,
+        total_questions=len(tasks_data)
+    )
+
+    await send_next_task3_question(callback.bot, callback.message.chat.id, state)
+    await callback.answer()
+
+
+async def send_next_task3_question(bot: Bot, chat_id: int, state: FSMContext):
+    """Отправляет следующий вопрос или завершает тест."""
+    data = await state.get_data()
+
+    current_index = data["current_index"]
+    tasks = data["tasks"]
+    total_questions = data["total_questions"]
+
+    if current_index < total_questions:
+        current_task = tasks[current_index]
+
+        # Формируем варианты ответов в формате "A. Текст варианта"
+        options_list = [f"{letter}. {text}"
+                        for letter, text in current_task['options'].items()]
+
+        # Сортируем по алфавиту для единообразия
+        sorted_options = sorted(options_list)
+
+        # Находим индекс правильного ответа в отсортированном списке
+        correct_option_text = f"{current_task['correct_letter']}. {current_task['options'][current_task['correct_letter']]}"
+        correct_option_id = sorted_options.index(correct_option_text)
+
+        await bot.send_poll(
+            chat_id=chat_id,
+            question=f"Вопрос {current_index + 1} из {total_questions}",
+            options=sorted_options,
+            type="quiz",
+            correct_option_id=correct_option_id,
+            is_anonymous=False
+        )
+
+        # Сохраняем correct_option_id для последующей проверки
+        await state.update_data(correct_option_id=correct_option_id)
+        await state.set_state(ListeningThirdStates.answer)
+    else:
+        # Завершаем тест
+        score = data["score"]
+        await bot.send_message(
+            chat_id=chat_id,
+            text=TEXT_TASK_COMPLETED.format(score=score, total=total_questions)
+        )
+        await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.listening)
+
+
+@router.poll_answer(ListeningThirdStates.answer)
+async def handle_third_task_answer(poll_answer: PollAnswer, state: FSMContext):
+    """Обрабатывает ответ пользователя на вопрос третьего типа."""
+    data = await state.get_data()
+
+    # Проверяем правильность ответа
+    is_correct = poll_answer.option_ids[0] == data["correct_option_id"]
+
+    # Обновляем данные состояния
+    await state.update_data(
+        current_index=data["current_index"] + 1,
+        score=data["score"] + int(is_correct)
+    )
+
+    # Отправляем следующий вопрос (или завершаем тест)
+    await send_next_task3_question(poll_answer.bot, poll_answer.user.id, state)

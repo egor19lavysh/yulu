@@ -38,20 +38,20 @@ class SecondTask(Base):
 
 
 class ThirdTask(Base):
-    __tablename__ = "listening_third_type_tasks"
+    __tablename__ = "listening_third_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     correct_letter: Mapped[str] = mapped_column(String(1))
 
-    options = relationship("ListeningOption", back_populates="task")
+    options = relationship("ThirdTaskOption", back_populates="task")
 
 
-class ListeningOption(Base):
-    __tablename__ = "listening_options"
+class ThirdTaskOption(Base):
+    __tablename__ = "listening_third_task_options"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     letter: Mapped[str] = mapped_column(String(1))
     text: Mapped[str]
 
-    task_id: Mapped[int] = mapped_column(ForeignKey("listening_third_type_tasks.id"))
+    task_id: Mapped[int] = mapped_column(ForeignKey("listening_third_tasks.id"))
     task = relationship("ThirdTask", back_populates="options")

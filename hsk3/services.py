@@ -78,6 +78,13 @@ class ListeningService:
         orm_tasks = [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
         return orm_tasks
 
+    def get_test_third_tasks(self):
+        tasks = self.repo.get_test_third_tasks()
+        orm_tasks = [ThirdTaskSchema(id=task.id,
+                                     correct_letter=task.correct_letter,
+                                     options=[ThirdTaskOptionSchema.model_validate(option, from_attributes=True) for option in task.options]) for task in tasks]
+        return orm_tasks
+
 
 
 reading_service = ReadingService(repo=reading_repo)

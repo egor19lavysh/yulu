@@ -9,5 +9,11 @@ class WritingStates(StatesGroup):
     word = State()
 
 
-class ListeningStates(StatesGroup):
+class ListeningFirstStates(StatesGroup):
+    answer = State()
+
+class ListeningSecondStates(StatesGroup):
+    answer = State()
+
+class ListeningThirdStates(StatesGroup):
     answer = State()
