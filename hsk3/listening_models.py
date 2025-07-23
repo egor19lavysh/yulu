@@ -10,6 +10,10 @@ class Listening(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     audio_id: Mapped[str]
 
+    first_type_tasks: Mapped[list["FirstTask"]] = relationship("FirstTask", back_populates="listening_var")
+    second_type_tasks: Mapped[list["SecondTask"]] = relationship("SecondTask", back_populates="listening_var")
+    third_type_tasks: Mapped[list["ThirdTask"]] = relationship("ThirdTask", back_populates="listening_var")
+
 
 class FirstTask(Base):
     __tablename__ = "listening_first_tasks"
@@ -17,6 +21,9 @@ class FirstTask(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     picture_id: Mapped[str]
     questions: Mapped[list["FirstTaskQuestion"]] = relationship("FirstTaskQuestion", back_populates="task")
+
+    listening_var_id: Mapped[int] = mapped_column(ForeignKey("listening_tasks.id"))
+    listening_var = relationship("Listening", back_populates="first_type_tasks")
 
 
 class FirstTaskQuestion(Base):
@@ -36,6 +43,9 @@ class SecondTask(Base):
     text: Mapped[str]
     is_correct: Mapped[bool]
 
+    listening_var_id: Mapped[int] = mapped_column(ForeignKey("listening_tasks.id"))
+    listening_var = relationship("Listening", back_populates="second_type_tasks")
+
 
 class ThirdTask(Base):
     __tablename__ = "listening_third_tasks"
@@ -44,6 +54,9 @@ class ThirdTask(Base):
     correct_letter: Mapped[str] = mapped_column(String(1))
 
     options = relationship("ThirdTaskOption", back_populates="task")
+
+    listening_var_id: Mapped[int] = mapped_column(ForeignKey("listening_tasks.id"))
+    listening_var = relationship("Listening", back_populates="third_type_tasks")
 
 
 class ThirdTaskOption(Base):

@@ -62,6 +62,7 @@ class WritingService:
         return orm_tasks
 
 
+# service.py
 @dataclass
 class ListeningService:
     repo: ListeningRepository
@@ -70,7 +71,8 @@ class ListeningService:
         task = self.repo.get_test_first_task()
         orm_task = FirstTaskSchema(id=task.id,
                                    picture_id=task.picture_id,
-                                   questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions])
+                                   questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in
+                                              task.questions])
         return orm_task
 
     def get_test_second_tasks(self):
@@ -82,7 +84,81 @@ class ListeningService:
         tasks = self.repo.get_test_third_tasks()
         orm_tasks = [ThirdTaskSchema(id=task.id,
                                      correct_letter=task.correct_letter,
-                                     options=[ThirdTaskOptionSchema.model_validate(option, from_attributes=True) for option in task.options]) for task in tasks]
+                                     options=[ThirdTaskOptionSchema.model_validate(option, from_attributes=True) for
+                                              option in task.options]) for task in tasks]
+        return orm_tasks
+
+    # Новые методы для единой механики
+    def get_listening_variants(self):
+        """Получает все доступные варианты listening заданий"""
+        variants = self.repo.get_listening_variants()
+        if not variants:
+            return []
+
+        orm_variants = [ListeningSchema.model_validate(variant, from_attributes=True) for variant in variants]
+        return orm_variants
+
+    def get_listening_variant(self, variant_id: int):
+        """Получает конкретный вариант по ID"""
+        variant = self.repo.get_listening_variant(variant_id)
+        if not variant:
+            return None
+
+        orm_variant = ListeningSchema.model_validate(variant, from_attributes=True)
+        return orm_variant
+
+    def get_first_tasks_by_variant(self, variant_id: int):
+        """Получает задания первого типа для варианта"""
+        tasks = self.repo.get_first_tasks_by_variant(variant_id)
+        if not tasks:
+            return []
+
+        orm_tasks = []
+        for task in tasks:
+            orm_task = FirstTaskSchema(
+                id=task.id,
+                picture_id=task.picture_id,
+                questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions]
+            )
+            orm_tasks.append(orm_task)
+        return orm_tasks
+
+    def get_first_task_by_variant(self, variant_id: int):
+        """Получает первое задание первого типа для варианта"""
+        task = self.repo.get_first_task_by_variant(variant_id)
+        if not task:
+            return None
+
+        orm_task = FirstTaskSchema(
+            id=task.id,
+            picture_id=task.picture_id,
+            questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions]
+        )
+        return orm_task
+
+    def get_second_tasks_by_variant(self, variant_id: int):
+        """Получает задания второго типа для варианта"""
+        tasks = self.repo.get_second_tasks_by_variant(variant_id)
+        if not tasks:
+            return []
+
+        orm_tasks = [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
+        return orm_tasks
+
+    def get_third_tasks_by_variant(self, variant_id: int):
+        """Получает задания третьего типа для варианта"""
+        tasks = self.repo.get_third_tasks_by_variant(variant_id)
+        if not tasks:
+            return []
+
+        orm_tasks = []
+        for task in tasks:
+            orm_task = ThirdTaskSchema(
+                id=task.id,
+                correct_letter=task.correct_letter,
+                options=[ThirdTaskOptionSchema.model_validate(option, from_attributes=True) for option in task.options]
+            )
+            orm_tasks.append(orm_task)
         return orm_tasks
 
 
