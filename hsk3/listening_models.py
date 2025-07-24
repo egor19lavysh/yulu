@@ -51,13 +51,23 @@ class ThirdTask(Base):
     __tablename__ = "listening_third_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    correct_letter: Mapped[str] = mapped_column(String(1))
 
-    options = relationship("ThirdTaskOption", back_populates="task")
+    questions: Mapped[list["ThirdTaskQuestion"]] = relationship("ThirdTaskQuestion", back_populates="task")
 
     listening_var_id: Mapped[int] = mapped_column(ForeignKey("listening_tasks.id"))
-    listening_var = relationship("Listening", back_populates="third_type_tasks")
+    listening_var: Mapped["Listening"] = relationship("Listening", back_populates="third_type_tasks")
 
+
+class ThirdTaskQuestion(Base):
+    __tablename__ = "listening_third_task_questions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    correct_letter: Mapped[str] = mapped_column(String(1))
+
+    options: Mapped[list["ThirdTaskOption"]] = relationship("ThirdTaskOption", back_populates="question")
+
+    task_id: Mapped[int] = mapped_column(ForeignKey("listening_third_tasks.id"))
+    task: Mapped["ThirdTask"] = relationship("ThirdTask", back_populates="questions")
 
 class ThirdTaskOption(Base):
     __tablename__ = "listening_third_task_options"
@@ -66,5 +76,5 @@ class ThirdTaskOption(Base):
     letter: Mapped[str] = mapped_column(String(1))
     text: Mapped[str]
 
-    task_id: Mapped[int] = mapped_column(ForeignKey("listening_third_tasks.id"))
-    task = relationship("ThirdTask", back_populates="options")
+    question_id: Mapped[int] = mapped_column(ForeignKey("listening_third_task_questions.id"))
+    question: Mapped["ThirdTaskQuestion"] = relationship("ThirdTaskQuestion", back_populates="options")

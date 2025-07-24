@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from typing import Optional
+
 from hsk3.repositories import *
 from hsk3.schemas import *
 
@@ -62,52 +64,35 @@ class WritingService:
         return orm_tasks
 
 
-# service.py
+
+
 @dataclass
 class ListeningService:
     repo: ListeningRepository
 
-    def get_test_first_task(self):
-        task = self.repo.get_test_first_task()
-        orm_task = FirstTaskSchema(id=task.id,
-                                   picture_id=task.picture_id,
-                                   questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in
-                                              task.questions])
-        return orm_task
-
-    def get_test_second_tasks(self):
-        tasks = self.repo.get_test_second_tasks()
-        orm_tasks = [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
-        return orm_tasks
-
-    def get_test_third_tasks(self):
-        tasks = self.repo.get_test_third_tasks()
-        orm_tasks = [ThirdTaskSchema(id=task.id,
-                                     correct_letter=task.correct_letter,
-                                     options=[ThirdTaskOptionSchema.model_validate(option, from_attributes=True) for
-                                              option in task.options]) for task in tasks]
-        return orm_tasks
+    # Методы для тестирования (если используются)
+    # def get_test_first_task(self): ...
+    # def get_test_second_tasks(self): ...
+    # def get_test_third_tasks(self): ...
 
     # Новые методы для единой механики
-    def get_listening_variants(self):
+    def get_listening_variants(self) -> List[ListeningSchema]:
         """Получает все доступные варианты listening заданий"""
         variants = self.repo.get_listening_variants()
         if not variants:
             return []
 
-        orm_variants = [ListeningSchema.model_validate(variant, from_attributes=True) for variant in variants]
-        return orm_variants
+        return [ListeningSchema.model_validate(variant, from_attributes=True) for variant in variants]
 
-    def get_listening_variant(self, variant_id: int):
+    def get_listening_variant(self, variant_id: int) -> Optional[ListeningSchema]:
         """Получает конкретный вариант по ID"""
         variant = self.repo.get_listening_variant(variant_id)
         if not variant:
             return None
 
-        orm_variant = ListeningSchema.model_validate(variant, from_attributes=True)
-        return orm_variant
+        return ListeningSchema.model_validate(variant, from_attributes=True)
 
-    def get_first_tasks_by_variant(self, variant_id: int):
+    def get_first_tasks_by_variant(self, variant_id: int) -> List[FirstTaskSchema]:
         """Получает задания первого типа для варианта"""
         tasks = self.repo.get_first_tasks_by_variant(variant_id)
         if not tasks:
@@ -118,47 +103,65 @@ class ListeningService:
             orm_task = FirstTaskSchema(
                 id=task.id,
                 picture_id=task.picture_id,
-                questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions]
+                questions=[
+                    FirstTaskQuestionSchema.model_validate(q, from_attributes=True)
+                    for q in task.questions
+                ]
             )
             orm_tasks.append(orm_task)
         return orm_tasks
 
-    def get_first_task_by_variant(self, variant_id: int):
+    def get_first_task_by_variant(self, variant_id: int) -> Optional[FirstTaskSchema]:
         """Получает первое задание первого типа для варианта"""
         task = self.repo.get_first_task_by_variant(variant_id)
         if not task:
             return None
 
-        orm_task = FirstTaskSchema(
+        return FirstTaskSchema(
             id=task.id,
             picture_id=task.picture_id,
-            questions=[FirstTaskQuestionSchema.model_validate(q, from_attributes=True) for q in task.questions]
+            questions=[
+                FirstTaskQuestionSchema.model_validate(q, from_attributes=True)
+                for q in task.questions
+            ]
         )
-        return orm_task
 
-    def get_second_tasks_by_variant(self, variant_id: int):
+    def get_second_tasks_by_variant(self, variant_id: int) -> List[SecondTaskSchema]:
         """Получает задания второго типа для варианта"""
         tasks = self.repo.get_second_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
-        orm_tasks = [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
-        return orm_tasks
+        return [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
 
-    def get_third_tasks_by_variant(self, variant_id: int):
-        """Получает задания третьего типа для варианта"""
+    def get_third_tasks_by_variant(self, variant_id: int) -> List[ThirdTaskSchema]:
+        """Получает задания третьего типа для варианта со всеми связанными данными"""
         tasks = self.repo.get_third_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
         orm_tasks = []
-        for task in tasks:
+        for task in tasks:  # task - экземпляр ThirdTask
+            # Создаем список вопросов с опциями
+            questions = []
+            for question in task.questions:  # question - экземпляр ThirdTaskQuestion
+                options = [
+                    ThirdTaskOptionSchema.model_validate(option, from_attributes=True)
+                    for option in question.options  # option - экземпляр ThirdTaskOption
+                ]
+                question_schema = ThirdTaskQuestionSchema(
+                    id=question.id,
+                    correct_letter=question.correct_letter,
+                    options=options
+                )
+                questions.append(question_schema)
+
             orm_task = ThirdTaskSchema(
                 id=task.id,
-                correct_letter=task.correct_letter,
-                options=[ThirdTaskOptionSchema.model_validate(option, from_attributes=True) for option in task.options]
+                questions=questions
             )
             orm_tasks.append(orm_task)
+
         return orm_tasks
 
 

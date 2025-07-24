@@ -51,42 +51,32 @@ def create_sample_task():
 
         listening.second_type_tasks = second_tasks
 
-        t1 = ThirdTask(correct_letter="B")
-        t1.options = [
+        third1 = ThirdTask()
+        tq1 = ThirdTaskQuestion(correct_letter="B")
+        tos1 = [
             ThirdTaskOption(letter="A", text="洗盘子"),
             ThirdTaskOption(letter="B", text="搬椅子"),
             ThirdTaskOption(letter="C", text="打扫间")
+
         ]
 
-        t2 = ThirdTask(correct_letter="B")
-        t2.options = [
-            ThirdTaskOption(letter="A", text="师生 "),
-            ThirdTaskOption(letter="B", text="Правильный)"),
-            ThirdTaskOption(letter="C", text="妻子和 (опечатка)")
+        tq1.options = tos1
+        third1.questions = [tq1]
+
+        third2 = ThirdTask()
+        tq2 = ThirdTaskQuestion(correct_letter="B")
+        tos2 = [
+            ThirdTaskOption(letter="A", text="师生"),
+            ThirdTaskOption(letter="B", text="правильный ответ)"),
+            ThirdTaskOption(letter="C", text="妻子和")
+
         ]
 
-        t3 = ThirdTask(correct_letter="A")
-        t3.options = [
-            ThirdTaskOption(letter="A", text="刷牙了"),
-            ThirdTaskOption(letter="B", text="吃得饱(опечатка)"),
-            ThirdTaskOption(letter="C", text="不吃甜的")
-        ]
+        tq2.options = tos2
+        third2.questions = [tq2]
 
-        t4 = ThirdTask(correct_letter="A")
-        t4.options = [
-            ThirdTaskOption(letter="A", text="嘴"),
-            ThirdTaskOption(letter="B", text="鼻子"),
-            ThirdTaskOption(letter="C", text="耳朵")
-        ]
+        listening.third_type_tasks = [third1, third2]
 
-        t5 = ThirdTask(correct_letter="B")
-        t5.options = [
-            ThirdTaskOption(letter="A", text="去 "),
-            ThirdTaskOption(letter="B", text=" 相机"),
-            ThirdTaskOption(letter="C", text="买笔记 ")
-        ]
-
-        listening.third_type_tasks = [t1, t2, t3, t4, t5]
 
 
 

@@ -80,6 +80,8 @@ class SecondTaskSchema(BaseModel):
     class Config:
         from_attributes = True
 
+# ... (другие импорты и схемы)
+
 class ThirdTaskOptionSchema(BaseModel):
     id: int
     letter: str
@@ -88,12 +90,20 @@ class ThirdTaskOptionSchema(BaseModel):
     class Config:
         from_attributes = True
 
-class ThirdTaskSchema(BaseModel):
+class ThirdTaskQuestionSchema(BaseModel):
     id: int
     correct_letter: str
-    options: list[ThirdTaskOptionSchema]
+    options: list[ThirdTaskOptionSchema] # Список опций для конкретного вопроса
 
     class Config:
         from_attributes = True
 
+class ThirdTaskSchema(BaseModel):
+    id: int
+    # ИЗМЕНЕНО: Поле должно называться "questions", как в модели SQLAlchemy
+    questions: list[ThirdTaskQuestionSchema]
 
+    class Config:
+        from_attributes = True
+
+# ... (остальные схемы)
