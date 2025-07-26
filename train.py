@@ -1,88 +1,98 @@
-import random
-
-from sqlalchemy import select
-
 from database import get_db_session
-from hsk3.listening_models import *
+from hsk3.reading.models import *
 
 
 def create_sample_task():
     session = next(get_db_session())
 
     try:
-        listening = Listening(audio_id="CQACAgIAAxkBAAIC-GiBIC7T-gJ__sO4Mn97GPHQ1EK5AAJEfAACa6QJSPZNA-lFMliwNgQ")
+        r = Reading()
 
-        first_task = FirstTask(picture_id="AgACAgIAAxkBAAIC9GiBH7zGyhQ_wVevqMmWH3Wwkk9wAAKe9TEba6QJSIQAAcQLuDo_lgEAAwIAA3gAAzYE")
-        questions1 = [
-            FirstTaskQuestion(correct_letter="C"),
-            FirstTaskQuestion(correct_letter="F"),
-            FirstTaskQuestion(correct_letter="E"),
-            FirstTaskQuestion(correct_letter="A"),
-            FirstTaskQuestion(correct_letter="B")
+        ft1 = ReadingFirstTask()
+
+        ops1 = [
+            ReadingFirstTaskOption(letter="A", text=" 说她很聪明，每考试都是第一 "),
+            ReadingFirstTaskOption(letter="B", text=" 跳了两个小时的舞，真累啊！"),
+            ReadingFirstTaskOption(letter="C", text="你该多花点儿时间跟儿子在一起，多跟他聊聊儿")
         ]
 
-        first_task.questions = questions1
-
-        first_task2 = FirstTask(picture_id="AgACAgIAAxkBAAIC9miBH9UpO02hqF6Ged5C-_c1EP2EAAKf9TEba6QJSLUtNL7E4WSbAQADAgADeAADNgQ")
-        questions2 = [
-            FirstTaskQuestion(correct_letter="E"),
-            FirstTaskQuestion(correct_letter="B"),
-            FirstTaskQuestion(correct_letter="A"),
-            FirstTaskQuestion(correct_letter="D"),
-            FirstTaskQuestion(correct_letter="C")
+        q1 = [
+            ReadingFirstTaskQuestion(text="姐，你要看的那个电视节目经开始了 ", correct_letter="B"),
+            ReadingFirstTaskQuestion(text="．孩子在不愿意跟说话，怎么办？ ", correct_letter="A"),
+            ReadingFirstTaskQuestion(text="穿绿裙子的那个小朋真可爱", correct_letter="C"),
         ]
 
-        first_task2.questions = questions2
+        ft1.options = ops1
+        ft1.questions = q1
 
-        listening.first_type_tasks = [first_task, first_task2]
+        ft2 = ReadingFirstTask()
 
-        second_tasks = [
-            SecondTask(text="★ 他在请人回答问题", is_correct=True),
-            SecondTask(text="★ 那位小姐要去8层", is_correct=False),
-            SecondTask(text="★ 手表进水了", is_correct=True),
-            SecondTask(text="★ ★ 他终于找到那 书了 (есть опечатка)", is_correct=True),
-            SecondTask(text="★ 他在住在黄河附 ", is_correct=False),
-            SecondTask(text="★ 他边跑步边音乐 ", is_correct=True),
-            SecondTask(text="★ 冬鸟会飞到 方 (есть опечатка)", is_correct=False),
-            SecondTask(text="★ 他买的东西没送到 ", is_correct=True),
-            SecondTask(text="★ 他不认识那个女孩儿 ", is_correct=False),
-            SecondTask(text="★ 他最爱吃那儿的面条儿 ", is_correct=False)
+        ops2 = [
+            ReadingFirstTaskOption(letter="A", text=" 是昨去商店给妹妹买的生日礼物"),
+            ReadingFirstTaskOption(letter="B", text="妈妈，你给讲个故吧？"),
+            ReadingFirstTaskOption(letter="C", text=" 大家离得一点儿，个子的学站前面")
         ]
 
-        listening.second_type_tasks = second_tasks
-
-        third1 = ThirdTask()
-        tq1 = ThirdTaskQuestion(correct_letter="B")
-        tos1 = [
-            ThirdTaskOption(letter="A", text="洗盘子"),
-            ThirdTaskOption(letter="B", text="搬椅子"),
-            ThirdTaskOption(letter="C", text="打扫间")
-
+        q2 = [
+            ReadingFirstTaskQuestion(text="．准备好了吗？笑一笑， 要开始照了 ", correct_letter="B"),
+            ReadingFirstTaskQuestion(text="．．好，但完了就要睡觉啊 ", correct_letter="A"),
+            ReadingFirstTaskQuestion(text="．王阿姨每都很 ", correct_letter="C"),
         ]
 
-        tq1.options = tos1
-        third1.questions = [tq1]
+        ft2.options = ops2
+        ft2.questions = q2
 
-        third2 = ThirdTask()
-        tq2 = ThirdTaskQuestion(correct_letter="B")
-        tos2 = [
-            ThirdTaskOption(letter="A", text="师生"),
-            ThirdTaskOption(letter="B", text="правильный ответ)"),
-            ThirdTaskOption(letter="C", text="妻子和")
+        r.first_tasks = [ft1, ft2]
 
+        st1 = ReadingSecondTask()
+
+        ops1 = [
+            ReadingSecondTaskOption(letter="A", text=" 是昨去商店给妹妹买的生日礼物"),
+            ReadingSecondTaskOption(letter="B", text="妈妈，你给讲个故吧？"),
+            ReadingSecondTaskOption(letter="C", text=" 大家离得一点儿，个子的学站前面")
         ]
 
-        tq2.options = tos2
-        third2.questions = [tq2]
+        q1 = [
+            ReadingSecondTaskQuestion(text="．准备好了吗？笑一笑， 要开始照了 ", correct_letter="B"),
+            ReadingSecondTaskQuestion(text="．．好，但完了就要睡觉啊 ", correct_letter="A"),
+            ReadingSecondTaskQuestion(text="．王阿姨每都很 ", correct_letter="C"),
+        ]
 
-        listening.third_type_tasks = [third1, third2]
+        st1.options = ops1
+        st1.questions = q1
+
+        st2 = ReadingSecondTask()
+
+        ops2 = [
+            ReadingSecondTaskOption(letter="A", text=" 是昨去商店给妹妹买的生日礼物"),
+            ReadingSecondTaskOption(letter="B", text="妈妈，你给讲个故吧？"),
+            ReadingSecondTaskOption(letter="C", text=" 大家离得一点儿，个子的学站前面")
+        ]
+
+        q2 = [
+            ReadingSecondTaskQuestion(text="．准备好了吗？笑一笑， 要开始照了 ", correct_letter="B"),
+            ReadingSecondTaskQuestion(text="．．好，但完了就要睡觉啊 ", correct_letter="A"),
+            ReadingSecondTaskQuestion(text="．王阿姨每都很 ", correct_letter="C"),
+        ]
+
+        st2.options = ops2
+        st2.questions = q2
+
+        r.second_tasks = [st1, st2]
 
 
+        tt1 = ReadingThirdTask(text="：您是来参今 会议的吗？您来早了一点儿，在才8点半 您先进来\n吧\n ★ 会议最可能几点开始？", correct_letter="B")
+        ops1 = [
+            ReadingThirdTaskOption(letter="A", text="8点"),
+            ReadingThirdTaskOption(letter="B", text="8点半"),
+            ReadingThirdTaskOption(letter="C", text="9点"),
+        ]
 
+        tt1.options = ops1
 
+        r.third_tasks = [tt1]
 
-
-        session.add(listening)
+        session.add(r)
         session.commit()
     except Exception as e:
         session.rollback()
