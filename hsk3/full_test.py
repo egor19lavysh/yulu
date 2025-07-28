@@ -43,24 +43,20 @@ async def show_full_variants(callback: CallbackQuery):
     reading_variants = reading_service.get_reading_variants()
     writing_variants = writing_service.get_variants()
 
-    # Находим варианты, которые есть во всех разделах (по ID)
-    listening_ids = {v.id for v in listening_variants}
-    reading_ids = {v.id for v in reading_variants}
-    writing_ids = {v.id for v in writing_variants}
+    # Находим минимальное количество вариантов среди всех разделов
+    min_variants_count = min(len(listening_variants), len(reading_variants), len(writing_variants))
 
-    common_ids = listening_ids & reading_ids & writing_ids
-
-    if not common_ids:
+    if min_variants_count == 0:
         await callback.message.answer("Извините, полные варианты временно недоступны.")
         await callback.answer()
         return
 
     builder = InlineKeyboardBuilder()
-    for num, variant_id in enumerate(sorted(common_ids), start=1):
+    for i in range(min_variants_count):
         builder.add(
             InlineKeyboardButton(
-                text=f"Полный вариант {num}",
-                callback_data=f"{CALLBACK_FULL_VARIANT}_{variant_id}"
+                text=f"Полный вариант {i + 1}",
+                callback_data=f"{CALLBACK_FULL_VARIANT}_{i}"
             )
         )
     builder.adjust(1)
@@ -73,12 +69,27 @@ async def show_full_variants(callback: CallbackQuery):
 @router.callback_query(F.data.startswith(CALLBACK_FULL_VARIANT))
 async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     """Начинает полное прохождение варианта"""
-    variant_id = int(callback.data.split("_")[-1])
+    variant_index = int(callback.data.split("_")[-1])
+
+    # Получаем варианты всех разделов
+    listening_variants = listening_service.get_listening_variants()
+    reading_variants = reading_service.get_reading_variants()
+    writing_variants = writing_service.get_variants()
+
+    # Получаем конкретные варианты по индексу
+    listening_variant = listening_variants[variant_index]
+    reading_variant = reading_variants[variant_index]
+    writing_variant = writing_variants[variant_index]
 
     # Инициализируем состояние для полного теста
     await state.update_data(
         full_test_mode=True,
-        full_test_variant_id=variant_id,
+        full_test_variant_index=variant_index,
+        variant_ids={
+            "listening": listening_variant.id,
+            "reading": reading_variant.id,
+            "writing": writing_variant.id
+        },
         current_section="listening",
         section_results={
             "listening": {"score": 0, "total": 0},
@@ -89,18 +100,24 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
 
     # Начинаем с аудирования
     await callback.message.answer(TEXT_STARTING_LISTENING)
-    await start_listening_section(callback, state, variant_id)
+    await start_listening_section(callback, state, listening_variant.id)
     await callback.answer()
 
 
 async def start_listening_section(callback: CallbackQuery, state: FSMContext, variant_id: int):
     """Запускает раздел аудирования"""
-    # Используем существующую функцию, но с модификацией callback.data
-    original_data = callback.data
-    callback.data = f"listening_variant_{variant_id}"
+    # Создаем новый объект CallbackQuery с нужными данными
+    from types import SimpleNamespace
+
+    # Создаем имитацию CallbackQuery для передачи в существующую функцию
+    fake_callback = SimpleNamespace()
+    fake_callback.data = f"listening_variant_{variant_id}"
+    fake_callback.bot = callback.bot
+    fake_callback.message = callback.message
+    fake_callback.answer = callback.answer
 
     # Вызываем существующую функцию
-    await start_listening_variant(callback, state)
+    await start_listening_variant(fake_callback, state)
 
 
 async def complete_listening_and_start_reading(bot: Bot, chat_id: int, state: FSMContext, score: int, total: int):
@@ -116,16 +133,18 @@ async def complete_listening_and_start_reading(bot: Bot, chat_id: int, state: FS
 
     await bot.send_message(chat_id, TEXT_STARTING_READING)
 
-    # Создаем фейковый callback для запуска чтения
-    from aiogram.types import User, Chat, Message
+    # Создаем имитацию CallbackQuery для запуска чтения
     from types import SimpleNamespace
 
     fake_callback = SimpleNamespace()
-    fake_callback.data = f"reading_variant_{data['full_test_variant_id']}"
+    fake_callback.data = f"reading_variant_{data['variant_ids']['reading']}"
     fake_callback.bot = bot
     fake_callback.message = SimpleNamespace()
     fake_callback.message.chat = SimpleNamespace()
     fake_callback.message.chat.id = chat_id
+    fake_callback.message.answer = lambda text, reply_markup=None: bot.send_message(chat_id, text,
+                                                                                    reply_markup=reply_markup)
+    fake_callback.message.delete = lambda: None
     fake_callback.answer = lambda: None
 
     await start_reading_variant(fake_callback, state)
@@ -145,7 +164,7 @@ async def complete_reading_and_start_writing(bot: Bot, chat_id: int, state: FSMC
     await bot.send_message(chat_id, TEXT_STARTING_WRITING)
 
     # Получаем вариант письма и запускаем его
-    variant_id = data['full_test_variant_id']
+    variant_id = data['variant_ids']['writing']
     var = writing_service.get_variant_by_id(variant_id=variant_id)
 
     await state.update_data(
@@ -180,4 +199,4 @@ async def complete_full_test(bot: Bot, chat_id: int, state: FSMContext, writing_
     )
 
     await state.clear()
-    await get_back_to_types(bot, chat_id, "hsk3_full_test")
+    await get_back_to_types(bot, chat_id, Sections.full_test)

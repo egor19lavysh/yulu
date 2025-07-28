@@ -401,12 +401,23 @@ async def send_next_third_question(bot: Bot, chat_id: int, state: FSMContext):
             chat_id=chat_id,
             text=TEXT_TASK_COMPLETED.format(score=part_score, total=total_questions)
         )
-        await bot.send_message(
-            chat_id=chat_id,
-            text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}</b>"
-        )
-        await state.clear()
-        await get_back_to_types(bot, chat_id, Sections.listening)
+
+        # Проверяем, является ли это частью полного теста
+        if data.get("full_test_mode"):
+            from hsk3.full_test import complete_listening_and_start_reading
+            await complete_listening_and_start_reading(bot, chat_id, state, total_score,
+                                                       # Подсчитайте общее количество вопросов
+                                                       sum(len(task.questions) for task in
+                                                           data.get("first_tasks", [])) +
+                                                       len(data.get("questions", [])) +
+                                                       total_questions)
+        else:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}</b>"
+            )
+            await state.clear()
+            #await get_back_to_types(bot, chat_id, Sections.listening)
 
 
 @router.poll_answer(ListeningThirdStates.answer)

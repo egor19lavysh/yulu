@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, PollAnswer, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk3.intro import Sections, get_back_to_types
 from hsk3.reading.service import service
-from hsk3.states import QuizStates
+from .states import QuizStates
 
 router = Router()
 
@@ -337,13 +337,20 @@ async def send_next_third_task(bot: Bot, chat_id: int, state: FSMContext):
             chat_id,
             TEXT_TASK_COMPLETED.format(score=part_score, total=len(third_tasks))
         )
-        await bot.send_message(
-            chat_id,
-            TEXT_ALL_PARTS_COMPLETED.format(total_score=total_score)
-        )
 
-        await state.clear()
-        await get_back_to_types(bot, chat_id, Sections.reading)
+        # Проверяем, является ли это частью полного теста
+        if data.get("full_test_mode"):
+            from hsk3.full_test import complete_reading_and_start_writing
+            total_questions = (len(data.get("first_tasks", [])) +
+                               len(data.get("second_tasks", [])) +
+                               len(third_tasks))
+            await complete_reading_and_start_writing(bot, chat_id, state, total_score, total_questions)
+        else:
+            await bot.send_message(
+                chat_id,
+                TEXT_ALL_PARTS_COMPLETED.format(total_score=total_score)
+            )
+            await state.clear()
 
 
 # Общий обработчик ответов на все типы заданий
