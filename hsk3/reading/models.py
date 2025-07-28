@@ -2,10 +2,6 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from database import Base
-
 
 class Reading(Base):
     __tablename__ = "reading_tasks"

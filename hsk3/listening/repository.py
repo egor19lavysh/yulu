@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy.orm import Session, selectinload
-from hsk3.listening_models import *
+from hsk3.listening.models import *
 from sqlalchemy import select
 from database import get_db_session
 import random

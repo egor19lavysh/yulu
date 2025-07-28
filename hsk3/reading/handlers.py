@@ -34,10 +34,10 @@ async def show_reading_variants(callback: CallbackQuery):
         return
 
     builder = InlineKeyboardBuilder()
-    for variant in variants:
+    for num, variant in enumerate(variants, start=1):
         builder.add(
             InlineKeyboardButton(
-                text=f"Вариант {variant.id}",
+                text=f"Вариант {num}",
                 callback_data=f"{CALLBACK_READING_VARIANT}_{variant.id}"
             )
         )

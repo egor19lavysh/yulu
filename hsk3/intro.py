@@ -11,7 +11,7 @@ class Sections:
     reading = "hsk3_reading"
     writing = "hsk3_writing"
     words = "hsk3_words"
-    whole_variant = "hsk3_all"
+    full_test = "hsk3_all"
 
 
 async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None):
