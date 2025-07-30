@@ -141,13 +141,14 @@ async def send_next_task(bot: Bot, chat_id: int, state: FSMContext, is_first=Tru
             # Проверяем, является ли это частью полного теста
             if data.get("full_test_mode"):
                 from hsk3.full_test import complete_full_test
-                await complete_full_test(bot, chat_id, state, final_score, total_tasks)
+                await complete_full_test(bot, chat_id, state, final_score, 0)  # total не используется
             else:
                 await bot.send_message(chat_id=chat_id, text=TEXT_ALL_PARTS_COMPLETED.format(
                     score=final_score,
                     total=total_tasks
                 ))
                 await state.clear()
+                await get_back_to_types(bot, chat_id, Sections.writing)
 
 
 @router.message(FirstTaskStates.sentence)
@@ -188,7 +189,6 @@ async def handle_next_second_task(msg: Message, state: FSMContext):
         score += 1
         await msg.reply(text=CORRECT_ANSWER)
     else:
-        print(curr_task.correct_answer)
         await msg.reply(text=WRONG_ANSWER.format(correct_answer=curr_task.correct_answer))
 
     index += 1

@@ -79,7 +79,38 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     # Получаем конкретные варианты по индексу
     listening_variant = listening_variants[variant_index]
     reading_variant = reading_variants[variant_index]
-    writing_variant = writing_variants[variant_index]
+    writing_variant_list = writing_variants[variant_index]
+
+    # Получаем полные объекты вариантов с задачами
+    listening_full = listening_service.get_listening_variant(listening_variant.id)
+    reading_full = reading_service.get_reading_variant(reading_variant.id)
+    writing_full = writing_service.get_variant_by_id(writing_variant_list.id)
+
+    # Подсчитываем общее количество вопросов для каждого раздела
+    # Аудирование
+    listening_first_tasks = listening_service.get_first_tasks_by_variant(listening_variant.id)
+    listening_second_tasks = listening_service.get_second_tasks_by_variant(listening_variant.id)
+    listening_third_tasks = listening_service.get_third_tasks_by_variant(listening_variant.id)
+
+    listening_total = (
+            sum(len(task.questions) for task in listening_first_tasks) +
+            len(listening_second_tasks) +
+            sum(len(task.questions) for task in listening_third_tasks)
+    )
+
+    # Чтение
+    reading_first_tasks = reading_service.get_first_tasks_by_variant(reading_variant.id)
+    reading_second_tasks = reading_service.get_second_tasks_by_variant(reading_variant.id)
+    reading_third_tasks = reading_service.get_third_tasks_by_variant(reading_variant.id)
+
+    reading_total = (
+            sum(len(task.questions) for task in reading_first_tasks) +
+            sum(len(task.questions) for task in reading_second_tasks) +
+            len(reading_third_tasks)
+    )
+
+    # Письмо - используем полный объект
+    writing_total = len(writing_full.first_tasks) + len(writing_full.second_tasks)
 
     # Инициализируем состояние для полного теста
     await state.update_data(
@@ -88,13 +119,13 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
         variant_ids={
             "listening": listening_variant.id,
             "reading": reading_variant.id,
-            "writing": writing_variant.id
+            "writing": writing_variant_list.id
         },
         current_section="listening",
         section_results={
-            "listening": {"score": 0, "total": 0},
-            "reading": {"score": 0, "total": 0},
-            "writing": {"score": 0, "total": 0}
+            "listening": {"score": 0, "total": listening_total},
+            "reading": {"score": 0, "total": reading_total},
+            "writing": {"score": 0, "total": writing_total}
         }
     )
 
@@ -124,7 +155,8 @@ async def complete_listening_and_start_reading(bot: Bot, chat_id: int, state: FS
     """Завершает аудирование и начинает чтение"""
     data = await state.get_data()
     section_results = data["section_results"]
-    section_results["listening"] = {"score": score, "total": total}
+    # Используем предварительно подсчитанное значение, но обновляем score
+    section_results["listening"]["score"] = score
 
     await state.update_data(
         current_section="reading",
@@ -154,7 +186,8 @@ async def complete_reading_and_start_writing(bot: Bot, chat_id: int, state: FSMC
     """Завершает чтение и начинает письмо"""
     data = await state.get_data()
     section_results = data["section_results"]
-    section_results["reading"] = {"score": score, "total": total}
+    # Используем предварительно подсчитанное значение, но обновляем score
+    section_results["reading"]["score"] = score
 
     await state.update_data(
         current_section="writing",
@@ -182,7 +215,8 @@ async def complete_full_test(bot: Bot, chat_id: int, state: FSMContext, writing_
     """Завершает полный тест"""
     data = await state.get_data()
     section_results = data["section_results"]
-    section_results["writing"] = {"score": writing_score, "total": writing_total}
+    # Используем предварительно подсчитанное значение, но обновляем score
+    section_results["writing"]["score"] = writing_score
 
     total_score = sum(result["score"] for result in section_results.values())
     total_possible = sum(result["total"] for result in section_results.values())

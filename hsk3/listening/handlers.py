@@ -235,17 +235,16 @@ async def start_part_2_direct(bot: Bot, chat_id: int, state: FSMContext):
     await bot.send_message(chat_id, text=SECOND_TASK_TEXT)
     await state.update_data(
         current_index=0,
-        questions=[{"id": task.id, "text": task.text, "is_correct": task.is_correct} for task in second_tasks],
+        second_part_questions=[{"id": task.id, "text": task.text, "is_correct": task.is_correct} for task in second_tasks],  # Переименовываем
         part_score=0
     )
     await send_next_second_question(bot, chat_id, state)
 
 
 async def send_next_second_question(bot: Bot, chat_id: int, state: FSMContext):
-    """Отправляет следующий вопрос второй части"""
     data = await state.get_data()
     current_index = data["current_index"]
-    questions = data["questions"]
+    questions = data["second_part_questions"]  # Используем переименованный ключ
     if current_index < len(questions):
         current_question = questions[current_index]
         builder = InlineKeyboardBuilder()
@@ -281,10 +280,9 @@ async def send_next_second_question(bot: Bot, chat_id: int, state: FSMContext):
 
 @router.callback_query(F.data.startswith(("true_", "false_")))
 async def handle_second_answer(callback: CallbackQuery, state: FSMContext):
-    """Обработчик ответов второй части"""
     data = await state.get_data()
     current_index = data["current_index"]
-    questions = data["questions"]
+    questions = data["second_part_questions"]  # Используем переименованный ключ
 
     try:
         user_answer, question_idx_str = callback.data.split("_")
@@ -403,21 +401,17 @@ async def send_next_third_question(bot: Bot, chat_id: int, state: FSMContext):
         )
 
         # Проверяем, является ли это частью полного теста
+        # Проверяем, является ли это частью полного теста
         if data.get("full_test_mode"):
             from hsk3.full_test import complete_listening_and_start_reading
-            await complete_listening_and_start_reading(bot, chat_id, state, total_score,
-                                                       # Подсчитайте общее количество вопросов
-                                                       sum(len(task.questions) for task in
-                                                           data.get("first_tasks", [])) +
-                                                       len(data.get("questions", [])) +
-                                                       total_questions)
+            await complete_listening_and_start_reading(bot, chat_id, state, total_score, 0)  # total не используется
         else:
             await bot.send_message(
                 chat_id=chat_id,
                 text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}</b>"
             )
             await state.clear()
-            #await get_back_to_types(bot, chat_id, Sections.listening)
+            await get_back_to_types(bot, chat_id, Sections.listening)
 
 
 @router.poll_answer(ListeningThirdStates.answer)

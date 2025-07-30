@@ -339,18 +339,17 @@ async def send_next_third_task(bot: Bot, chat_id: int, state: FSMContext):
         )
 
         # Проверяем, является ли это частью полного теста
+        # Проверяем, является ли это частью полного теста
         if data.get("full_test_mode"):
             from hsk3.full_test import complete_reading_and_start_writing
-            total_questions = (len(data.get("first_tasks", [])) +
-                               len(data.get("second_tasks", [])) +
-                               len(third_tasks))
-            await complete_reading_and_start_writing(bot, chat_id, state, total_score, total_questions)
+            await complete_reading_and_start_writing(bot, chat_id, state, total_score, 0)  # total не используется
         else:
             await bot.send_message(
                 chat_id,
                 TEXT_ALL_PARTS_COMPLETED.format(total_score=total_score)
             )
             await state.clear()
+            await get_back_to_types(bot, chat_id, Sections.reading)
 
 
 # Общий обработчик ответов на все типы заданий

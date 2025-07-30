@@ -1,5 +1,5 @@
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, Bot, F
 
@@ -29,6 +29,8 @@ async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None)
     builder.add(*buttons)
     builder.adjust(1)
 
+
+
     if bot and msg is None:
         await bot.send_message(chat_id, text, reply_markup=builder.as_markup())
     elif msg:
@@ -37,6 +39,8 @@ async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None)
 
 @router.message(Command("hsk3"))
 async def get_sections(msg: Message):
+    level_text = "Вы выбрали 3 уровень экзамена HSK 3"
+    await msg.answer(text=level_text, reply_markup=ReplyKeyboardRemove())
     await show_sections_menu(msg.chat.id, msg=msg)
 
 
