@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk3.intro import Sections, get_back_to_types
-from .service import service  # Убедитесь, что сервис корректно получает данные из репозиториев
+from .service import service
 from .states import ListeningFirstStates, ListeningSecondStates, ListeningThirdStates
 
 router = Router()
@@ -95,7 +95,7 @@ async def start_part_1(callback: CallbackQuery, state: FSMContext, variant_id: i
         await start_part_2_direct(callback.bot, callback.message.chat.id, state)
         return
 
-    # Сохраняем список заданий (FirstTask) в состоянии
+    # Сохраняем список заданий (FirstTask)
     await state.update_data(
         first_tasks=[task for task in first_tasks],  # Сохраняем сами объекты FirstTask
         current_task_index=0,  # Индекс текущего FirstTask

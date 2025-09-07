@@ -7,11 +7,11 @@ router = Router()
 
 
 class Sections:
-    listening = "hsk3_listening"
-    reading = "hsk3_reading"
-    writing = "hsk3_writing"
-    words = "hsk3_words"
-    full_test = "hsk3_full_test"
+    listening = "hsk4_listening"
+    reading = "hsk4_reading"
+    writing = "hsk4_writing"
+    words = "hsk4_words"
+    full_test = "hsk4_full_test"
 
 
 async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None):
@@ -29,17 +29,15 @@ async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None)
     builder.add(*buttons)
     builder.adjust(1)
 
-
-
     if bot and msg is None:
         await bot.send_message(chat_id, text, reply_markup=builder.as_markup())
     elif msg:
         await msg.answer(text, reply_markup=builder.as_markup())
 
 
-@router.message(Command("hsk3"))
+@router.message(Command("hsk4"))
 async def get_sections(msg: Message):
-    level_text = "Вы выбрали 3 уровень экзамена HSK"
+    level_text = "Вы выбрали 4 уровень экзамена HSK"
     await msg.answer(text=level_text, reply_markup=ReplyKeyboardRemove())
     await show_sections_menu(msg.chat.id, msg=msg)
 
@@ -58,5 +56,5 @@ async def get_back_to_types(bot: Bot, chat_id: int, section: str):
 
 @router.callback_query(F.data == "back_to_sections")
 async def back_to_sections_handler(callback: CallbackQuery):
-    await callback.message.delete()  # удаляем предыдущее сообщение с кнопками
+    await callback.message.delete()
     await show_sections_menu(callback.message.chat.id, bot=callback.bot)

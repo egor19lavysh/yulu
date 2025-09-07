@@ -42,6 +42,7 @@ WELCOME_TEXT = """
 async def cmd_start(message: types.Message):
     await message.answer(WELCOME_TEXT.format(name=(message.from_user.first_name + " " + message.from_user.last_name)))
 
+
 @dp.message(Command("help"))
 async def cmd_start(message: types.Message):
     await message.answer(WELCOME_TEXT.format(name=(message.from_user.first_name + " " + message.from_user.last_name)))
@@ -89,6 +90,7 @@ async def get_levels(msg: Message):
     )
 
     await msg.answer("Какой уровень хотите потренировать?", reply_markup=keyboard)
+
 
 # Запуск процесса поллинга новых апдейтов
 async def main():

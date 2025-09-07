@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy.orm import Session, selectinload
-from hsk3.listening.models import *
+from hsk4.listening.models import *
 from sqlalchemy import select
 from database import get_db_session
 
@@ -28,7 +28,6 @@ class ListeningRepository:
         with self.db_session as session:
             tasks = session.execute(
                 select(FirstTask)
-                .options(selectinload(FirstTask.questions))  # Загружаем связанные вопросы
                 .where(FirstTask.listening_var_id == variant_id)
             ).scalars().all()
             return tasks
@@ -38,6 +37,7 @@ class ListeningRepository:
         with self.db_session as session:
             tasks = session.execute(
                 select(SecondTask)
+                .options(selectinload(SecondTask.options))
                 .where(SecondTask.listening_var_id == variant_id)
             ).scalars().all()
             return tasks
@@ -49,24 +49,11 @@ class ListeningRepository:
             tasks = session.execute(
                 select(ThirdTask)
                 .options(
-                    selectinload(ThirdTask.questions)
-                        .selectinload(ThirdTaskQuestion.options)  # Загружаем опции для каждого вопроса
+                    selectinload(ThirdTask.options)
                 )
                 .where(ThirdTask.listening_var_id == variant_id)
             ).scalars().all()
             return tasks
-
-    # Метод для тестирования (если используется)
-    def get_first_task_by_variant(self, variant_id: int):
-        """Получает первое задание первого типа для варианта (для тестирования)"""
-        with self.db_session as session:
-            task = session.execute(
-                select(FirstTask)
-                .options(selectinload(FirstTask.questions))
-                .where(FirstTask.listening_var_id == variant_id)
-            ).scalars().first()
-            return task
-
 
 
 session = next(get_db_session())
