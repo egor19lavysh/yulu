@@ -4,18 +4,18 @@ from database import Base
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 
-class Listening(Base):
+class ListeningHSK4(Base):
     __tablename__ = "hsk4_listening_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     audio_id: Mapped[str]
 
-    first_type_tasks: Mapped[list["FirstTask"]] = relationship("FirstTask", back_populates="listening_var")
-    second_type_tasks: Mapped[list["SecondTask"]] = relationship("SecondTask", back_populates="listening_var")
-    third_type_tasks: Mapped[list["ThirdTask"]] = relationship("ThirdTask", back_populates="listening_var")
+    first_type_tasks: Mapped[list["FirstTaskHSK4"]] = relationship("FirstTaskHSK4", back_populates="listening_var")
+    second_type_tasks: Mapped[list["SecondTaskHSK4"]] = relationship("SecondTaskHSK4", back_populates="listening_var")
+    third_type_tasks: Mapped[list["ThirdTaskHSK4"]] = relationship("ThirdTaskHSK4", back_populates="listening_var")
 
 
-class FirstTask(Base):
+class FirstTaskHSK4(Base):
     __tablename__ = "hsk4_listening_first_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -23,21 +23,22 @@ class FirstTask(Base):
     is_correct: Mapped[bool] = mapped_column(default=False)
 
     listening_var_id: Mapped[int] = mapped_column(ForeignKey("hsk4_listening_tasks.id"))
-    listening_var = relationship("Listening", back_populates="first_type_tasks")
+    listening_var: Mapped["ListeningHSK4"] = relationship("ListeningHSK4", back_populates="first_type_tasks")
 
 
-class SecondTask(Base):
+class SecondTaskHSK4(Base):
     __tablename__ = "hsk4_listening_second_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    correct_letter: Mapped[str] = mapped_column(String(1))
-    options: Mapped[list["SecondTaskOption"]] = relationship("SecondTaskOption", back_populates="task")
+    correct_letter: Mapped[str] = mapped_column(String(1))  # Добавить валидацию на верхний регистр
 
     listening_var_id: Mapped[int] = mapped_column(ForeignKey("hsk4_listening_tasks.id"))
-    listening_var = relationship("Listening", back_populates="second_type_tasks")
+    listening_var: Mapped["ListeningHSK4"] = relationship("ListeningHSK4", back_populates="second_type_tasks")
+
+    options: Mapped[list["SecondTaskHSK4Option"]] = relationship("SecondTaskHSK4Option", back_populates="task")
 
 
-class SecondTaskOption(Base):
+class SecondTaskHSK4Option(Base):
     __tablename__ = "hsk4_listening_second_task_options"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -45,21 +46,22 @@ class SecondTaskOption(Base):
     text: Mapped[str]
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk4_listening_second_tasks.id"))
-    task = relationship("SecondTask", back_populates="options")
+    task: Mapped["SecondTaskHSK4"] = relationship("SecondTaskHSK4", back_populates="options")
 
 
-class ThirdTask(Base):
+class ThirdTaskHSK4(Base):
     __tablename__ = "hsk4_listening_third_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     correct_letter: Mapped[str] = mapped_column(String(1))
-    options: Mapped[list["ThirdTaskOption"]] = relationship("ThirdTaskOption", back_populates="task")
 
     listening_var_id: Mapped[int] = mapped_column(ForeignKey("hsk4_listening_tasks.id"))
-    listening_var = relationship("Listening", back_populates="third_type_tasks")
+    listening_var: Mapped["ListeningHSK4"] = relationship("ListeningHSK4", back_populates="third_type_tasks")
+
+    options: Mapped[list["ThirdTaskHSK4Option"]] = relationship("ThirdTaskHSK4Option", back_populates="task")
 
 
-class ThirdTaskOption(Base):
+class ThirdTaskHSK4Option(Base):
     __tablename__ = "hsk4_listening_third_task_options"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -67,4 +69,4 @@ class ThirdTaskOption(Base):
     text: Mapped[str]
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk4_listening_third_tasks.id"))
-    task = relationship("ThirdTask", back_populates="options")
+    task: Mapped["ThirdTaskHSK4"] = relationship("ThirdTaskHSK4", back_populates="options")

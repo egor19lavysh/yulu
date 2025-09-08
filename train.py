@@ -1,230 +1,431 @@
 from database import get_db_session
-from hsk3.listening.models import *
+from hsk4.listening.models import *
 
 
 def create_sample_task():
     session = next(get_db_session())
 
     try:
-        l = Listening(audio_id="CQACAgIAAxkBAAIC-GiBIC7T-gJ__sO4Mn97GPHQ1EK5AAJEfAACa6QJSPZNA-lFMliwNgQ")
+        listening_task = ListeningHSK4(
+            audio_id="CQACAgIAAxkBAAIKdWi_ItjPWsP6uZbUiLsjy05vj8U2AALXfgAChEH4SUgbFQt-VlN3NgQ"
+        )
 
-        ft1 = FirstTask(picture_id="AgACAgIAAxkBAAIC9GiBH7zGyhQ_wVevqMmWH3Wwkk9wAAKe9TEba6QJSIQAAcQLuDo_lgEAAwIAA3gAAzYE")
+        ### 1 part
 
-        ft1q = [
-            FirstTaskQuestion(correct_letter="C"),
-            FirstTaskQuestion(correct_letter="F"),
-            FirstTaskQuestion(correct_letter="E"),
-            FirstTaskQuestion(correct_letter="A"),
-            FirstTaskQuestion(correct_letter="B")
+        # Создаем задачи первого типа (1-10)
+        first_tasks = [
+            FirstTaskHSK4(text="飞机还没起飞。", is_correct=True),  # 1.√
+            FirstTaskHSK4(text="不饿就不要吃早饭。", is_correct=False),  # 2.X
+            FirstTaskHSK4(text="经理发现了小王的一些缺点。", is_correct=False),  # 3.X
+            FirstTaskHSK4(text="女朋友听过这个笑话。", is_correct=True),  # 4.√
+            FirstTaskHSK4(text="他没有翻译第二部分。", is_correct=False),  # 5.X
+            FirstTaskHSK4(text="服务员的京剧唱得很好。", is_correct=True),  # 6.√
+            FirstTaskHSK4(text="王老师现在是教授了。", is_correct=True),  # 7.√
+            FirstTaskHSK4(text="他想买个大房子。", is_correct=False),  # 8.X
+            FirstTaskHSK4(text="他在理发店。", is_correct=True),  # 9.√
+            FirstTaskHSK4(text="这个咖啡馆儿很热闹。", is_correct=False)  # 10.X
         ]
 
-        ft1.questions = ft1q
+        # Добавляем задачи первого типа
+        listening_task.first_type_tasks = first_tasks
 
-        ft2 = FirstTask(
-            picture_id="AgACAgIAAxkBAAIC9miBH9UpO02hqF6Ged5C-_c1EP2EAAKf9TEba6QJSLUtNL7E4WSbAQADAgADeAADNgQ")
+        ### 2 part
 
-        ft2q = [
-            FirstTaskQuestion(correct_letter="E"),
-            FirstTaskQuestion(correct_letter="B"),
-            FirstTaskQuestion(correct_letter="A"),
-            FirstTaskQuestion(correct_letter="D"),
-            FirstTaskQuestion(correct_letter="C")
+        second_tasks_data = [
+            # Задача 11 - A没纸了
+            {
+                "correct": "A",
+                "options": {
+                    "A": "没纸了",
+                    "B": "男的没发",
+                    "C": "打印机坏了",
+                    "D": "传真机坏了"
+                }
+            },
+            # Задача 12 - C小说
+            {
+                "correct": "C",
+                "options": {
+                    "A": "将来",
+                    "B": "理想",
+                    "C": "小说",
+                    "D": "职业"
+                }
+            },
+            # Задача 13 - C打网球
+            {
+                "correct": "C",
+                "options": {
+                    "A": "办签证",
+                    "B": "去学校",
+                    "C": "打网球",
+                    "D": "打羽毛球"
+                }
+            },
+            # Задача 14 - B换个箱子
+            {
+                "correct": "B",
+                "options": {
+                    "A": "不想出国",
+                    "B": "换个箱子",
+                    "C": "不符合规定",
+                    "D": "早点儿回来"
+                }
+            },
+            # Задача 15 - C正在减肥
+            {
+                "correct": "C",
+                "options": {
+                    "A": "变胖了",
+                    "B": "很难受",
+                    "C": "正在减肥",
+                    "D": "工作很辛苦"
+                }
+            },
+            # Задача 16 - D在准备考试
+            {
+                "correct": "D",
+                "options": {
+                    "A": "是研究生",
+                    "B": "参加工作了",
+                    "C": "已经毕业了",
+                    "D": "在准备考试"
+                }
+            },
+            # Задача 17 - C爬山
+            {
+                "correct": "C",
+                "options": {
+                    "A": "打扫",
+                    "B": "等人",
+                    "C": "爬山",
+                    "D": "购物"
+                }
+            },
+            # Задача 18 - A幽默
+            {
+                "correct": "A",
+                "options": {
+                    "A": "幽默",
+                    "B": "很难过",
+                    "C": "很粗心",
+                    "D": "没有耐心"
+                }
+            },
+            # Задача 19 - C很咸
+            {
+                "correct": "C",
+                "options": {
+                    "A": "很酸",
+                    "B": "很甜",
+                    "C": "很咸",
+                    "D": "很辣"
+                }
+            },
+            # Задача 20 - A他们输了
+            {
+                "correct": "A",
+                "options": {
+                    "A": "他们输了",
+                    "B": "他们赢了",
+                    "C": "他们放弃了",
+                    "D": "他们很愉快"
+                }
+            },
+            # Задача 21 - B去旅游
+            {
+                "correct": "B",
+                "options": {
+                    "A": "学钢琴",
+                    "B": "去旅游",
+                    "C": "做生意",
+                    "D": "锻炼身体"
+                }
+            },
+            # Задача 22 - B感冒了
+            {
+                "correct": "B",
+                "options": {
+                    "A": "肚子疼",
+                    "B": "感冒了",
+                    "C": "觉得热",
+                    "D": "穿得太少"
+                }
+            },
+            # Задача 23 - A周末
+            {
+                "correct": "A",
+                "options": {
+                    "A": "周末",
+                    "B": "下周",
+                    "C": "两周后",
+                    "D": "下个月"
+                }
+            },
+            # Задача 24 - C卖家具的
+            {
+                "correct": "C",
+                "options": {
+                    "A": "医生",
+                    "B": "导游",
+                    "C": "卖家具的",
+                    "D": "开出租车的"
+                }
+            },
+            # Задача 25 - B马上来
+            {
+                "correct": "B",
+                "options": {
+                    "A": "我不会",
+                    "B": "马上来",
+                    "C": "没法解释",
+                    "D": "解决不了"
+                }
+            }
         ]
 
-        ft2.questions = ft2q
+        second_tasks = []
+        for i, task_data in enumerate(second_tasks_data, 11):
+            task = SecondTaskHSK4(
+                correct_letter=task_data["correct"],
+            )
 
-        l.first_type_tasks = [ft1, ft2]
+            options = []
+            for letter, text in task_data["options"].items():
+                options.append(SecondTaskHSK4Option(
+                    letter=letter,
+                    text=text
+                ))
 
-        second_tasks = [
-            SecondTask(text="★ 他在请人回答问题。", is_correct=True),  # 11. √
-            SecondTask(text="★ 那位小姐要去8层。", is_correct=False),  # 12. ×
-            SecondTask(text="★ 手表进水了。", is_correct=True),  # 13. √
-            SecondTask(text="★ 他终于找到那本书了。", is_correct=True),  # 14. √
-            SecondTask(text="★ 他现在住在黄河附近。", is_correct=False),  # 15. ×
-            SecondTask(text="★ 他喜欢边跑步边听音乐。", is_correct=True),  # 16. √
-            SecondTask(text="★ 冬天鸟会飞到北方。", is_correct=False),  # 17. ×
-            SecondTask(text="★ 他买的东西还没送到。", is_correct=True),  # 18. √
-            SecondTask(text="★ 他不认识那个女孩儿。", is_correct=False),  # 19. ×
-            SecondTask(text="★ 他最爱吃那儿的面条儿。", is_correct=False)  # 20. ×
+            task.options = options
+            second_tasks.append(task)
+
+        listening_task.second_type_tasks = second_tasks
+
+        ### 3 part
+
+        third_tasks_data = [
+            # Задача 26 - A医院
+            {
+                "correct": "A",
+                "options": {
+                    "A": "医院",
+                    "B": "宾馆",
+                    "C": "图书馆",
+                    "D": "体育场"
+                }
+            },
+            # Задача 27 - D很正式
+            {
+                "correct": "D",
+                "options": {
+                    "A": "很奇怪",
+                    "B": "很随便",
+                    "C": "很一般",
+                    "D": "很正式"
+                }
+            },
+            # Задача 28 - D女的很小心
+            {
+                "correct": "D",
+                "options": {
+                    "A": "撞车了",
+                    "B": "车速太慢",
+                    "C": "他们是记者",
+                    "D": "女的很小心"
+                }
+            },
+            # Задача 29 - C忘了密码
+            {
+                "correct": "C",
+                "options": {
+                    "A": "生病了",
+                    "B": "丢了电脑",
+                    "C": "忘了密码",
+                    "D": "弄坏镜子了"
+                }
+            },
+            # Задача 30 - C明天
+            {
+                "correct": "C",
+                "options": {
+                    "A": "5点",
+                    "B": "下班以后",
+                    "C": "明天",
+                    "D": "下个星期"
+                }
+            },
+            # Задача 31 - B3元5角
+            {
+                "correct": "B",
+                "options": {
+                    "A": "两元",
+                    "B": "3元5角",
+                    "C": "7元",
+                    "D": "9元"
+                }
+            },
+            # Задача 32 - D找李大夫
+            {
+                "correct": "D",
+                "options": {
+                    "A": "买手机",
+                    "B": "去亲戚家",
+                    "C": "交电话费",
+                    "D": "找李大夫"
+                }
+            },
+            # Задача 33 - C钥匙
+            {
+                "correct": "C",
+                "options": {
+                    "A": "毛巾",
+                    "B": "帽子",
+                    "C": "钥匙",
+                    "D": "笔记本"
+                }
+            },
+            # Задача 34 - A车上
+            {
+                "correct": "A",
+                "options": {
+                    "A": "车上",
+                    "B": "火车站",
+                    "C": "电梯里",
+                    "D": "地铁上"
+                }
+            },
+            # Задача 35 - B商店
+            {
+                "correct": "B",
+                "options": {
+                    "A": "公园",
+                    "B": "商店",
+                    "C": "洗手间",
+                    "D": "公共汽车"
+                }
+            },
+            # Задача 36 - B散散步
+            {
+                "correct": "B",
+                "options": {
+                    "A": "睡觉",
+                    "B": "散散步",
+                    "C": "洗个澡",
+                    "D": "回忆过去"
+                }
+            },
+            # Задача 37 - D怎样改变心情
+            {
+                "correct": "D",
+                "options": {
+                    "A": "要互相关心",
+                    "B": "做事要冷静",
+                    "C": "运动很重要",
+                    "D": "怎样改变心情"
+                }
+            },
+            # Задача 38 - D工作压力大
+            {
+                "correct": "D",
+                "options": {
+                    "A": "脾气好",
+                    "B": "爱做梦",
+                    "C": "很成功",
+                    "D": "工作压力大"
+                }
+            },
+            # Задача 39 - B抽烟
+            {
+                "correct": "B",
+                "options": {
+                    "A": "喝酒",
+                    "B": "抽烟",
+                    "C": "踢足球",
+                    "D": "说假话"
+                }
+            },
+            # Задача 40 - D家长
+            {
+                "correct": "D",
+                "options": {
+                    "A": "警察",
+                    "B": "司机",
+                    "C": "学生",
+                    "D": "家长"
+                }
+            },
+            # Задача 41 - A变宽了
+            {
+                "correct": "A",
+                "options": {
+                    "A": "变宽了",
+                    "B": "比较窄",
+                    "C": "禁止停车",
+                    "D": "没有红绿灯"
+                }
+            },
+            # Задача 42 - D激动
+            {
+                "correct": "D",
+                "options": {
+                    "A": "失望",
+                    "B": "羡慕",
+                    "C": "后悔",
+                    "D": "激动"
+                }
+            },
+            # Задача 43 - B结婚了
+            {
+                "correct": "B",
+                "options": {
+                    "A": "是演员",
+                    "B": "结婚了",
+                    "C": "很年轻",
+                    "D": "没有得奖"
+                }
+            },
+            # Задача 44 - D会议室
+            {
+                "correct": "D",
+                "options": {
+                    "A": "家里",
+                    "B": "厨房",
+                    "C": "教室",
+                    "D": "会议室"
+                }
+            },
+            # Задача 45 - A开会
+            {
+                "correct": "A",
+                "options": {
+                    "A": "开会",
+                    "B": "参观",
+                    "C": "听广播",
+                    "D": "看电视"
+                }
+            }
         ]
 
-        l.second_type_tasks = second_tasks
+        third_tasks = []
+        for i, task_data in enumerate(third_tasks_data, 26):
+            task = ThirdTaskHSK4(
+                correct_letter=task_data["correct"],
+            )
 
-        third_task1 = ThirdTask()
+            options = []
+            for letter, text in task_data["options"].items():
+                options.append(ThirdTaskHSK4Option(
+                    letter=letter,
+                    text=text
+                ))
 
-        # Добавляем вопросы с вариантами ответов
-        third_task1.questions = [
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="洗盘子"),
-                    ThirdTaskOption(letter="B", text="搬椅子"),
-                    ThirdTaskOption(letter="C", text="打扫房间")
-                ]
-            ),  # 21. B
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="师生"),
-                    ThirdTaskOption(letter="B", text="同事"),
-                    ThirdTaskOption(letter="C", text="妻子和丈夫")
-                ]
-            ),  # 22. B
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="刷牙了"),
-                    ThirdTaskOption(letter="B", text="吃得太饱"),
-                    ThirdTaskOption(letter="C", text="不吃甜的")
-                ]
-            ),  # 23. A
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="嘴"),
-                    ThirdTaskOption(letter="B", text="鼻子"),
-                    ThirdTaskOption(letter="C", text="耳朵")
-                ]
-            ),  # 24. A
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="去运动"),
-                    ThirdTaskOption(letter="B", text="还相机"),
-                    ThirdTaskOption(letter="C", text="买笔记本")
-                ]
-            ),  # 25. B
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="出了新菜"),
-                    ThirdTaskOption(letter="B", text="客人不满意"),
-                    ThirdTaskOption(letter="C", text="菜单不好懂")
-                ]
-            ),  # 26. A
-            ThirdTaskQuestion(
-                correct_letter="C",
-                options=[
-                    ThirdTaskOption(letter="A", text="睡得早"),
-                    ThirdTaskOption(letter="B", text="在写作业"),
-                    ThirdTaskOption(letter="C", text="明天有比赛")
-                ]
-            ),  # 27. C
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="很好看"),
-                    ThirdTaskOption(letter="B", text="很干净"),
-                    ThirdTaskOption(letter="C", text="比较少见")
-                ]
-            ),  # 28. A
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="叔叔"),
-                    ThirdTaskOption(letter="B", text="弟弟"),
-                    ThirdTaskOption(letter="C", text="哥哥")
-                ]
-            ),  # 29. B
-            ThirdTaskQuestion(
-                correct_letter="C",
-                options=[
-                    ThirdTaskOption(letter="A", text="宾馆门口"),
-                    ThirdTaskOption(letter="B", text="公园北门"),
-                    ThirdTaskOption(letter="C", text="学校东门")
-                ]
-            )  # 30. C
-        ]
+            task.options = options
+            third_tasks.append(task)
 
-        fourth_task = ThirdTask()  # Используем ту же модель, что и для третьей части
+        listening_task.third_type_tasks = third_tasks
 
-        # Добавляем вопросы с вариантами ответов
-        fourth_task.questions = [
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="问路"),
-                    ThirdTaskOption(letter="B", text="写字"),
-                    ThirdTaskOption(letter="C", text="买地图")
-                ]
-            ),  # 31. A
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="晴天"),
-                    ThirdTaskOption(letter="B", text="阴天"),
-                    ThirdTaskOption(letter="C", text="下雪了")
-                ]
-            ),  # 32. B
-            ThirdTaskQuestion(
-                correct_letter="C",
-                options=[
-                    ThirdTaskOption(letter="A", text="节日"),
-                    ThirdTaskOption(letter="B", text="朋友的姓"),
-                    ThirdTaskOption(letter="C", text="孩子的名字")
-                ]
-            ),  # 33. C
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="爱读书"),
-                    ThirdTaskOption(letter="B", text="在学画"),
-                    ThirdTaskOption(letter="C", text="不太努力")
-                ]
-            ),  # 34. B
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="出国了"),
-                    ThirdTaskOption(letter="B", text="去办护照了"),
-                    ThirdTaskOption(letter="C", text="请假回家了")
-                ]
-            ),  # 35. A
-            ThirdTaskQuestion(
-                correct_letter="C",
-                options=[
-                    ThirdTaskOption(letter="A", text="饿了"),
-                    ThirdTaskOption(letter="B", text="行李箱坏了"),
-                    ThirdTaskOption(letter="C", text="钱包不见了")
-                ]
-            ),  # 36. C
-            ThirdTaskQuestion(
-                correct_letter="C",
-                options=[
-                    ThirdTaskOption(letter="A", text="是司机"),
-                    ThirdTaskOption(letter="B", text="数学差"),
-                    ThirdTaskOption(letter="C", text="需要两辆车")
-                ]
-            ),  # 37. C
-            ThirdTaskQuestion(
-                correct_letter="C",
-                options=[
-                    ThirdTaskOption(letter="A", text="没关灯"),
-                    ThirdTaskOption(letter="B", text="在找词典"),
-                    ThirdTaskOption(letter="C", text="没做完题")
-                ]
-            ),  # 38. C
-            ThirdTaskQuestion(
-                correct_letter="A",
-                options=[
-                    ThirdTaskOption(letter="A", text="新开不久"),
-                    ThirdTaskOption(letter="B", text="环境一般"),
-                    ThirdTaskOption(letter="C", text="在医院旁边")
-                ]
-            ),  # 39. A
-            ThirdTaskQuestion(
-                correct_letter="B",
-                options=[
-                    ThirdTaskOption(letter="A", text="瘦了"),
-                    ThirdTaskOption(letter="B", text="不发烧了"),
-                    ThirdTaskOption(letter="C", text="腿还很疼")
-                ]
-            )  # 40. B
-        ]
-
-        l.third_type_tasks = [third_task1, fourth_task]
-
-        session.add(l)
+        session.add(listening_task)
         session.commit()
 
     except Exception as e:

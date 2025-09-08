@@ -24,6 +24,8 @@ config.set_main_option("sqlalchemy.url", settings.DB_URL)
 from hsk3.reading.models import *
 from hsk3.listening.models import *
 from hsk3.writing.models import *
+from hsk4.listening.models import *
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

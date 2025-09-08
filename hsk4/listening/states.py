@@ -1,5 +1,9 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class ListeningFirstStates(StatesGroup):
-    answer = State()
+class ListeningSecondStates(StatesGroup):
+    poll_answer = State()
+
+
+class ListeningThirdStates(StatesGroup):
+    poll_answer = State()

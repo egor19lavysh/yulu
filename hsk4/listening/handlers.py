@@ -4,28 +4,33 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk4.intro import Sections, get_back_to_types
 from .service import service
-from .states import *
+from .states import ListeningThirdStates, ListeningSecondStates
 
 router = Router()
 
 ### Callback значения
-CALLBACK_LISTENING_VARIANT = "listening_variant"
+CALLBACK_LISTENING_VARIANT = "hsk4_listening_variant"
 
 ### Текстовые значения
 TEXT_CHOOSE_VARIANT = "Выберите вариант для прохождения:"
 TEXT_PART_1 = "Задание 1"
 TEXT_PART_2 = "Задание 2"
 TEXT_PART_3 = "Задание 3"
+TEXT_ALL_PARTS_COMPLETED = "Все части пройдены! 🎉"
 TEXT_NO_TASKS = "Задания не найдены."
+TEXT_TASK_COMPLETED = "Задание выполнено!🎉\nРезультат: <b>{score}/{total}</b>"
+TEXT_ALL_TASKS_COMPLETED = "Общий результат: <b>{score}/{total}</b>"
+
 
 TEXT_TASK_1 = "Прослушайте краткие отрывки, и выберите истинны ли утверждения к ним или нет:"
+TEXT_TASK_2 = "Прослушайте диалоги между двумя людьми, и ответьте на поставленный диктором вопрос:"
+TEXT_TASK_3 = "Прослушайте диалоги или монологи (4-5 предложений), и ответьте на 1-2 вопроса:"
 
 TEXT_TRUE = "Правда"
 TEXT_FALSE = "Ложь"
 
 ANSWER_RIGHT = "✅ Верно!"
 ANSWER_FALSE = "❌ Неверно!"
-
 
 
 @router.callback_query(F.data == Sections.listening)
@@ -85,13 +90,13 @@ async def start_part_1(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(TEXT_PART_2)
         await start_part_2(callback, state)
 
+
 async def handle_first_tasks(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     tasks = data["first_tasks"]
     index = data["index"]
     score = data["score"]
     total_score = data["total_score"]
-
 
     if index < len(tasks):
         current_task = tasks[index]
@@ -100,19 +105,21 @@ async def handle_first_tasks(callback: CallbackQuery, state: FSMContext):
         builder.add(
             InlineKeyboardButton(
                 text=TEXT_TRUE,
-                callback_data=f"true_{index + 1}"
+                callback_data=f"hsk4_true_{index + 1}"
             ),
             InlineKeyboardButton(
                 text=TEXT_FALSE,
-                callback_data=f"false_{index + 1}"
+                callback_data=f"hsk4_false_{index + 1}"
             )
         )
-        await callback.message.send_message(
+        await callback.message.answer(
             text=f"Вопрос {index + 1}/{len(tasks)}\n{current_task.text}",
             reply_markup=builder.as_markup()
         )
     else:
         total_score += score
+
+        await callback.message.answer(TEXT_TASK_COMPLETED.format(score=total_score, total=10))
 
         await state.update_data(
             total_score=total_score
@@ -121,7 +128,8 @@ async def handle_first_tasks(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(text=TEXT_PART_2)
         await start_part_2(callback, state)
 
-@router.callback_query(F.data.startswith(("true_", "false_")))
+
+@router.callback_query(F.data.startswith(("hsk4_true_", "hsk4_false_")))
 async def handle_first_answer(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     tasks = data["first_tasks"]
@@ -134,13 +142,15 @@ async def handle_first_answer(callback: CallbackQuery, state: FSMContext):
     }
 
     curr_task = tasks[index]
-    answer, task_id = callback.data.split("_")
+    answer = callback.data.split("_")[1]
 
     if bool_dict[answer] == curr_task.is_correct:
         score = score + 1
-        await callback.message.edit_text(ANSWER_RIGHT)
+        await callback.message.edit_text(
+            f"{callback.message.text}\n{ANSWER_RIGHT}"
+        )
     else:
-        await callback.message.edit_text(ANSWER_FALSE)
+        await callback.message.edit_text(f"{callback.message.text}\n{ANSWER_FALSE}")
 
     new_index = index + 1
 
@@ -153,4 +163,170 @@ async def handle_first_answer(callback: CallbackQuery, state: FSMContext):
 
 
 async def start_part_2(callback: CallbackQuery, state: FSMContext):
-    pass
+    variant_id = int((await state.get_data())["variant_id"])
+    if second_tasks := service.get_second_tasks_by_variant(variant_id=variant_id):
+        await state.update_data(
+            second_tasks=second_tasks,
+            index=0,
+            score=0
+        )
+
+        await callback.message.answer(text=TEXT_TASK_2)
+        await handle_second_tasks(callback, state)
+
+    else:
+        await callback.message.answer(TEXT_NO_TASKS)
+        await callback.answer()
+        await callback.message.answer(TEXT_PART_3)
+        await start_part_3(callback, state)
+
+
+async def handle_second_tasks(callback: CallbackQuery = None, state: FSMContext = None,
+                              bot: Bot = None, chat_id: int = None):
+    data = await state.get_data()
+    tasks = data["second_tasks"]
+    index = data["index"]
+    score = data["score"]
+    total_score = data["total_score"]
+
+    if not bot:
+        bot = callback.bot
+        chat_id = callback.message.chat.id
+
+    if index < len(tasks):
+        task = tasks[index]
+        options = [f"{option.letter}. {option.text}" for option in task.options]
+        correct_answer_id = ord(task.correct_letter) - ord("A")
+        await bot.send_poll(
+            chat_id=chat_id,
+            options=options,
+            question=f"Вопрос {index + 1}/{len(tasks)}",
+            correct_option_id=correct_answer_id,
+            is_anonymous=False,
+            type="quiz"
+        )
+        await state.update_data(
+            correct_answer_id=correct_answer_id,
+            chat_id=chat_id
+        )
+        await state.set_state(ListeningSecondStates.poll_answer)
+    else:
+        total_score += score
+
+        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=total_score, total=15))
+
+        await state.update_data(
+            total_score=total_score
+        )
+
+        await bot.send_message(chat_id=chat_id, text=TEXT_PART_3)
+        await start_part_3(callback, state, bot, chat_id)
+
+
+@router.poll_answer(ListeningSecondStates.poll_answer)
+async def handle_second_answer(poll_answer: PollAnswer, state: FSMContext):
+    data = await state.get_data()
+    correct_answer_id = data["correct_answer_id"]
+    score = data["score"]
+    index = data["index"]
+    chat_id = data["chat_id"]
+
+    await state.update_data(
+        score=score + 1 if correct_answer_id == poll_answer.option_ids[0] else 0,
+        index=index + 1
+    )
+
+    await handle_second_tasks(bot=poll_answer.bot, state=state, chat_id=chat_id)
+
+
+async def start_part_3(callback: CallbackQuery = None, state: FSMContext = None,
+                       bot: Bot = None, chat_id: int = None):
+    if not bot:
+        bot = callback.bot
+        chat_id = callback.message.chat.id
+
+    variant_id = int((await state.get_data())["variant_id"])
+    if third_tasks := service.get_third_tasks_by_variant(variant_id=variant_id):
+        await state.update_data(
+            third_tasks=third_tasks,
+            index=0,
+            score=0
+        )
+
+        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_3)
+        await handle_third_tasks(bot, chat_id, state)
+
+    else:
+        await bot.send_message(chat_id=chat_id, text=TEXT_NO_TASKS)
+        await bot.send_message(chat_id=chat_id, text=TEXT_PART_3)
+        await finish_listening(bot, chat_id, state)
+
+
+async def handle_third_tasks(bot: Bot, chat_id: int, state: FSMContext):
+    data = await state.get_data()
+    tasks = data["third_tasks"]
+    index = data["index"]
+    score = data["score"]
+    total_score = data["total_score"]
+
+    if index < len(tasks):
+        task = tasks[index]
+        options = [f"{option.letter}. {option.text}" for option in task.options]
+        correct_answer_id = ord(task.correct_letter) - ord("A")
+        await bot.send_poll(
+            chat_id=chat_id,
+            options=options,
+            question=f"Вопрос {index + 1}/{len(tasks)}",
+            correct_option_id=correct_answer_id,
+            is_anonymous=False,
+            type="quiz"
+        )
+        await state.update_data(
+            correct_answer_id=correct_answer_id,
+            chat_id=chat_id
+        )
+        await state.set_state(ListeningThirdStates.poll_answer)
+    else:
+        total_score += score
+
+        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=total_score, total=15))
+
+
+        await state.update_data(
+            total_score=total_score
+        )
+
+        await finish_listening(bot, chat_id, state)
+
+@router.poll_answer(ListeningThirdStates.poll_answer)
+async def handle_second_answer(poll_answer: PollAnswer, state: FSMContext):
+    data = await state.get_data()
+    correct_answer_id = data["correct_answer_id"]
+    score = data["score"]
+    index = data["index"]
+    chat_id = data["chat_id"]
+
+    await state.update_data(
+        score=score + 1 if correct_answer_id == poll_answer.option_ids[0] else 0,
+        index=index + 1
+    )
+
+    await handle_third_tasks(bot=poll_answer.bot, state=state, chat_id=chat_id)
+
+
+
+async def finish_listening(bot: Bot, chat_id: int, state: FSMContext):
+    data = await state.get_data()
+    total_score = data["total_score"]
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=TEXT_ALL_PARTS_COMPLETED
+    )
+    await bot.send_message(
+        chat_id=chat_id,
+        text=TEXT_ALL_TASKS_COMPLETED.format(score=total_score, total=45)
+    )
+
+    await state.clear()
+    await get_back_to_types(bot, chat_id, Sections.listening)

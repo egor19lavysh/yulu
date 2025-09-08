@@ -8,6 +8,7 @@ from aiogram.types import BotCommand, Message, KeyboardButton
 
 from config import settings
 from hsk3 import routers as hsk3_routers
+from hsk4 import routers as hsk4_routers
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
@@ -95,6 +96,9 @@ async def get_levels(msg: Message):
 # Запуск процесса поллинга новых апдейтов
 async def main():
     for router in hsk3_routers:
+        dp.include_router(router)
+
+    for router in hsk4_routers:
         dp.include_router(router)
 
     await dp.start_polling(bot, allowed_updates=["message", "callback_query", "poll_answer"])

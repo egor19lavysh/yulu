@@ -12,14 +12,14 @@ class ListeningRepository:
     def get_listening_variants(self):
         """Получает все доступные варианты listening заданий"""
         with self.db_session as session:
-            variants = session.execute(select(Listening)).scalars().all()
+            variants = session.execute(select(ListeningHSK4)).scalars().all()
             return variants
 
     def get_listening_variant(self, variant_id: int):
         """Получает конкретный вариант по ID"""
         with self.db_session as session:
             variant = session.execute(
-                select(Listening).where(Listening.id == variant_id)
+                select(ListeningHSK4).where(ListeningHSK4.id == variant_id)
             ).scalars().first()
             return variant
 
@@ -27,8 +27,8 @@ class ListeningRepository:
         """Получает задания первого типа для варианта"""
         with self.db_session as session:
             tasks = session.execute(
-                select(FirstTask)
-                .where(FirstTask.listening_var_id == variant_id)
+                select(FirstTaskHSK4)
+                .where(FirstTaskHSK4.listening_var_id == variant_id)
             ).scalars().all()
             return tasks
 
@@ -36,9 +36,9 @@ class ListeningRepository:
         """Получает задания второго типа для варианта"""
         with self.db_session as session:
             tasks = session.execute(
-                select(SecondTask)
-                .options(selectinload(SecondTask.options))
-                .where(SecondTask.listening_var_id == variant_id)
+                select(SecondTaskHSK4)
+                .options(selectinload(SecondTaskHSK4.options))
+                .where(SecondTaskHSK4.listening_var_id == variant_id)
             ).scalars().all()
             return tasks
 
@@ -47,11 +47,11 @@ class ListeningRepository:
         with self.db_session as session:
             # Загружаем ThirdTask вместе с вопросами и опциями
             tasks = session.execute(
-                select(ThirdTask)
+                select(ThirdTaskHSK4)
                 .options(
-                    selectinload(ThirdTask.options)
+                    selectinload(ThirdTaskHSK4.options)
                 )
-                .where(ThirdTask.listening_var_id == variant_id)
+                .where(ThirdTaskHSK4.listening_var_id == variant_id)
             ).scalars().all()
             return tasks
 

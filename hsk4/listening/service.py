@@ -55,7 +55,7 @@ class ListeningService:
             orm_task = SecondTaskSchema(
                 id=task.id,
                 correct_letter=task.correct_letter,
-                questions=[
+                options=[
                     SecondTaskOptionSchema.model_validate(option) for option in task.options
                 ]
             )
@@ -75,7 +75,7 @@ class ListeningService:
             orm_task = ThirdTaskSchema(
                 id=task.id,
                 correct_letter=task.correct_letter,
-                questions=[
+                options=[
                     ThirdTaskOptionSchema.model_validate(option) for option in task.options
                 ]
             )
