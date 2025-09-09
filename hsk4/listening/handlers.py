@@ -21,7 +21,6 @@ TEXT_NO_TASKS = "Задания не найдены."
 TEXT_TASK_COMPLETED = "Задание выполнено!🎉\nРезультат: <b>{score}/{total}</b>"
 TEXT_ALL_TASKS_COMPLETED = "Общий результат: <b>{score}/{total}</b>"
 
-
 TEXT_TASK_1 = "Прослушайте краткие отрывки, и выберите истинны ли утверждения к ним или нет:"
 TEXT_TASK_2 = "Прослушайте диалоги между двумя людьми, и ответьте на поставленный диктором вопрос:"
 TEXT_TASK_3 = "Прослушайте диалоги или монологи (4-5 предложений), и ответьте на 1-2 вопроса:"
@@ -211,9 +210,10 @@ async def handle_second_tasks(callback: CallbackQuery = None, state: FSMContext 
         )
         await state.set_state(ListeningSecondStates.poll_answer)
     else:
+        print(total_score)
         total_score += score
 
-        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=total_score, total=15))
+        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=15))
 
         await state.update_data(
             total_score=total_score
@@ -231,10 +231,12 @@ async def handle_second_answer(poll_answer: PollAnswer, state: FSMContext):
     index = data["index"]
     chat_id = data["chat_id"]
 
-    await state.update_data(
-        score=score + 1 if correct_answer_id == poll_answer.option_ids[0] else 0,
-        index=index + 1
-    )
+    if poll_answer.option_ids:
+        is_correct = correct_answer_id == poll_answer.option_ids[0]
+        await state.update_data(
+            score=score + (1 if is_correct else 0),
+            index=index + 1
+        )
 
     await handle_second_tasks(bot=poll_answer.bot, state=state, chat_id=chat_id)
 
@@ -287,10 +289,10 @@ async def handle_third_tasks(bot: Bot, chat_id: int, state: FSMContext):
         )
         await state.set_state(ListeningThirdStates.poll_answer)
     else:
+        print(total_score)
         total_score += score
 
-        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=total_score, total=15))
-
+        await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=20))
 
         await state.update_data(
             total_score=total_score
@@ -298,21 +300,23 @@ async def handle_third_tasks(bot: Bot, chat_id: int, state: FSMContext):
 
         await finish_listening(bot, chat_id, state)
 
+
 @router.poll_answer(ListeningThirdStates.poll_answer)
-async def handle_second_answer(poll_answer: PollAnswer, state: FSMContext):
+async def handle_third_answer(poll_answer: PollAnswer, state: FSMContext):
     data = await state.get_data()
     correct_answer_id = data["correct_answer_id"]
     score = data["score"]
     index = data["index"]
     chat_id = data["chat_id"]
 
-    await state.update_data(
-        score=score + 1 if correct_answer_id == poll_answer.option_ids[0] else 0,
-        index=index + 1
-    )
+    if poll_answer.option_ids:
+        is_correct = correct_answer_id == poll_answer.option_ids[0]
+        await state.update_data(
+            score=score + (1 if is_correct else 0),
+            index=index + 1
+        )
 
     await handle_third_tasks(bot=poll_answer.bot, state=state, chat_id=chat_id)
-
 
 
 async def finish_listening(bot: Bot, chat_id: int, state: FSMContext):
@@ -321,11 +325,7 @@ async def finish_listening(bot: Bot, chat_id: int, state: FSMContext):
 
     await bot.send_message(
         chat_id=chat_id,
-        text=TEXT_ALL_PARTS_COMPLETED
-    )
-    await bot.send_message(
-        chat_id=chat_id,
-        text=TEXT_ALL_TASKS_COMPLETED.format(score=total_score, total=45)
+        text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/45</b>"
     )
 
     await state.clear()

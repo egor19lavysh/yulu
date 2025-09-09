@@ -408,7 +408,7 @@ async def send_next_third_question(bot: Bot, chat_id: int, state: FSMContext):
         else:
             await bot.send_message(
                 chat_id=chat_id,
-                text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}</b>"
+                text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/40</b>"
             )
             await state.clear()
             await get_back_to_types(bot, chat_id, Sections.listening)
