@@ -170,7 +170,6 @@ async def send_next_first_question(bot: Bot, chat_id: int, state: FSMContext):
 
 
 # --- Вторая часть (Задания типа 2) ---
-# --- Вторая часть (Задания типа 2) ---
 async def start_part_2_direct(bot: Bot, chat_id: int, state: FSMContext):
     """Запускает вторую часть напрямую"""
     data = await state.get_data()

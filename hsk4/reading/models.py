@@ -96,6 +96,9 @@ class ReadingThirdTaskQuestionHSK4(Base):
     correct_letter: Mapped[str] = mapped_column(String(1))
     options: Mapped[list["QuestionOptionHSK4"]] = relationship("QuestionOptionHSK4", back_populates="question")
 
+    task_id: Mapped[int] = mapped_column(ForeignKey("hsk4_reading_third_tasks.id"))
+    task: Mapped["ReadingThirdTaskHSK4"] = relationship("ReadingThirdTaskHSK4", back_populates="questions")
+
 
 class QuestionOptionHSK4(Base):
     __tablename__ = "hsk4_reading_third_task_question_options"

@@ -38,12 +38,15 @@ class QuestionOptionSchema(Base):
     text: str
 
 
-class ThirdTaskQuestion(Base):
+class ThirdTaskQuestionSchema(Base):
     text: str
     correct_letter: str
     options: list[QuestionOptionSchema]
 
 
-class ThirdTask(Base):
+class ThirdTaskSchema(Base):
     text: str
-    questions: list[ThirdTaskQuestion]
+    questions: list[ThirdTaskQuestionSchema]
+
+class ReadingVariantSchema(Base):
+    pass

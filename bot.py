@@ -41,7 +41,7 @@ WELCOME_TEXT = """
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer(WELCOME_TEXT.format(name=(message.from_user.first_name + " " + message.from_user.last_name)))
+    await message.answer(WELCOME_TEXT.format(name=message.from_user.username))
 
 
 @dp.message(Command("help"))

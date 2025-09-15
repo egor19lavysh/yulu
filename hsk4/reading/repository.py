@@ -9,7 +9,7 @@ from database import get_db_session
 class ReadingRepository:
     db_session: Session
 
-    def get_variants(self) -> list[ReadingHSK4]:
+    def get_reading_variants(self) -> list[ReadingHSK4]:
         with self.db_session as session:
             variants = session.execute(select(ReadingHSK4)).scalars().all()
             return variants

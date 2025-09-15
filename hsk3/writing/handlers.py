@@ -26,7 +26,7 @@ WRONG_ANSWER = "Это неправильно. Правильно будет: <b
 
 @router.callback_query(F.data == Sections.writing)
 async def show_writing_variants(callback: CallbackQuery):
-    variants = service.get_variants()
+    variants = service.get_reading_variants()
     if not variants:
         await callback.message.answer("Извините, варианты заданий временно недоступны.")
         await callback.answer()
