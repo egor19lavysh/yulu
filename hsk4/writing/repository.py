@@ -22,15 +22,15 @@ class WritingRepository:
             ).scalars().all()
             return tasks
 
-    def get_second_tasks_by_variant(self, variant_id: int) -> list[WritingSecondTaskHSK4]:
+    def get_second_task_by_variant(self, variant_id: int) -> WritingSecondTaskHSK4 | None:
         with self.db_session as session:
-            tasks = session.execute(
+            task = session.execute(
                 select(WritingSecondTaskHSK4)
                 .options(selectinload(WritingSecondTaskHSK4.words))
                 .where(WritingSecondTaskHSK4.writing_var_id == variant_id)
-            ).scalars().all()
+            ).scalar_one_or_none()
 
-            return tasks
+            return task
 
 
 session = next(get_db_session())

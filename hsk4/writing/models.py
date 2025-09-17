@@ -10,8 +10,8 @@ class WritingHSK4(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     first_type_tasks: Mapped[list["WritingFirstTaskHSK4"]] = relationship("WritingFirstTaskHSK4",
                                                                           back_populates="writing_var")
-    second_type_tasks: Mapped[list["WritingSecondTaskHSK4"]] = relationship("WritingSecondTaskHSK4",
-                                                                            back_populates="writing_var")
+    # second_type_tasks: Mapped[list["WritingSecondTaskHSK4"]] = relationship("WritingSecondTaskHSK4",
+    #                                                                         back_populates="writing_var")
 
 
 class WritingFirstTaskHSK4(Base):
@@ -33,7 +33,6 @@ class WritingSecondTaskHSK4(Base):
     words: Mapped[list["WritingSecondTaskWord"]] = relationship("WritingSecondTaskWord", back_populates="task")
 
     writing_var_id: Mapped[int] = mapped_column(ForeignKey("hsk4_writing_tasks.id"))
-    writing_var: Mapped["WritingHSK4"] = relationship("WritingHSK4", back_populates="second_type_tasks")
 
 
 class WritingSecondTaskWord(Base):
@@ -41,6 +40,7 @@ class WritingSecondTaskWord(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     text: Mapped[str]
+    possible_answer: Mapped[str]
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk4_writing_second_tasks.id"))
     task: Mapped["WritingSecondTaskHSK4"] = relationship("WritingSecondTaskHSK4", back_populates="words")

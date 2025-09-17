@@ -14,6 +14,7 @@ class WritingVarSchema(Base):
 
 class TaskWordSchema(Base):
     text: str
+    possible_answer: str
 
 
 class FirstTaskSchema(Base):

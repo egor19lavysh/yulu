@@ -345,4 +345,4 @@ async def finish_reading(bot: Bot, state: FSMContext):
     )
 
     await state.clear()
-    await get_back_to_types(bot, chat_id, Sections.listening)
+    await get_back_to_types(bot, chat_id, Sections.reading)
