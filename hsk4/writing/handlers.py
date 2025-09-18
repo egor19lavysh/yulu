@@ -32,7 +32,7 @@ TEXT_ALL_PARTS_COMPLETED = "Все части пройдены! 🎉"
 
 @router.callback_query(F.data == Sections.writing)
 async def show_writing_variants(callback: CallbackQuery):
-    variants = service.get_variants()
+    variants = service.get_writing_variants()
     builder = InlineKeyboardBuilder()
     for num, variant in enumerate(variants, start=1):
         builder.add(
@@ -48,8 +48,15 @@ async def show_writing_variants(callback: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith(CALLBACK_WRITING_VARIANT))
-async def start_writing_variant(callback: CallbackQuery, state: FSMContext):
+async def start_writing(callback: CallbackQuery, state: FSMContext):
     var_id = int(callback.data.split("_")[-1])
+    await state.update_data(variant_id=var_id)
+    await start_writing_variant(callback, state)
+
+
+async def start_writing_variant(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    var_id = data["variant_id"]
 
     await state.update_data(
         variant_id=var_id,
@@ -91,7 +98,8 @@ async def handle_first_tasks(bot: Bot, state: FSMContext):
 
     if index < len(tasks):
         curr_task = tasks[index]
-        await bot.send_message(chat_id=chat_id, text=f"{index + 1}/{10}. Иероглифы: <b>{curr_task.words}</b>" + TASK_FIRST_WARNING)
+        await bot.send_message(chat_id=chat_id,
+                               text=f"{index + 1}/{10}. Иероглифы: <b>{curr_task.words}</b>" + TASK_FIRST_WARNING)
         await state.set_state(FirstTask.answer)
     else:
         total_score += score
@@ -102,7 +110,6 @@ async def handle_first_tasks(bot: Bot, state: FSMContext):
             total_score=total_score
         )
         await start_part_2(bot=bot, state=state)
-
 
 
 @router.message(FirstTask.answer)
@@ -154,6 +161,7 @@ async def start_part_2(bot: Bot, state: FSMContext):
         await bot.send_message(chat_id=chat_id, text=TEXT_NO_TASKS)
         await finish_writing(bot=bot, state=state)
 
+
 async def handle_second_task(bot: Bot, state: FSMContext):
     data = await state.get_data()
     chat_id = data["chat_id"]
@@ -171,6 +179,7 @@ async def handle_second_task(bot: Bot, state: FSMContext):
 
         await finish_writing(bot=bot, state=state)
 
+
 @router.message(SecondTask.answer)
 async def handle_second_answer(msg: Message, state: FSMContext):
     data = await state.get_data()
@@ -178,7 +187,6 @@ async def handle_second_answer(msg: Message, state: FSMContext):
     index = data["index"]
 
     word = words[index]
-
 
     if msg.text:
         await msg.reply(f"<b>Ответ принят!</b>\nВозможный ответ: {word.possible_answer}")
@@ -192,15 +200,26 @@ async def handle_second_answer(msg: Message, state: FSMContext):
         await state.set_state(SecondTask.answer)
         return
 
+
 async def finish_writing(bot: Bot, state: FSMContext):
     data = await state.get_data()
     total_score = data["total_score"]
     chat_id = data["chat_id"]
 
-    await bot.send_message(
-        chat_id=chat_id,
-        text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/15 +5 возможных баллов</b>"
-    )
+    if data.get("is_full_test", False):
+        # Сохраняем результат письма и завершаем полный тест
+        await state.update_data(
+            writing_score=total_score
+        )
+        # Импортируем функцию из full_test
+        from hsk4.full_test import finish_full_test
+        await finish_full_test(bot, chat_id, state)
+        return
+    else:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/15 +5 возможных баллов</b>"
+        )
 
-    await state.clear()
-    await get_back_to_types(bot, chat_id, Sections.writing)
+        await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.writing)

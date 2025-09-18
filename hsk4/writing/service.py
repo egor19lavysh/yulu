@@ -8,7 +8,7 @@ from hsk4.writing.models import *
 class WritingService:
     repository: WritingRepository
 
-    def get_variants(self) -> list[WritingVarSchema]:
+    def get_writing_variants(self) -> list[WritingVarSchema]:
         variants = [WritingVarSchema.model_validate(var) for var in self.repository.get_variants()]
         return variants
 

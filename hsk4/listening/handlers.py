@@ -50,8 +50,15 @@ async def show_listening_variants(callback: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith(CALLBACK_LISTENING_VARIANT))
-async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
+async def start_listening(callback: CallbackQuery, state: FSMContext):
     var_id = int(callback.data.split("_")[-1])
+    await state.update_data(variant_id=var_id)
+    await start_listening_variant(callback, state)
+
+
+async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    var_id = data["variant_id"]
     variant = service.get_listening_variant(variant_id=var_id)
 
     if not variant:
@@ -65,7 +72,7 @@ async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
         total_score=0
     )
 
-    # Запускаем первую часть
+    await callback.bot.send_audio(callback.message.chat.id, variant.audio_id)
     await callback.message.answer(TEXT_PART_1)
     await start_part_1(callback, state)
     await callback.answer()
@@ -323,10 +330,21 @@ async def finish_listening(bot: Bot, chat_id: int, state: FSMContext):
     data = await state.get_data()
     total_score = data["total_score"]
 
-    await bot.send_message(
-        chat_id=chat_id,
-        text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/45</b>"
-    )
+    if data.get("is_full_test", False):
+        # Сохраняем результат аудирования и переходим к чтению
+        await state.update_data(
+            listening_score=total_score,
+            total_score=0
+        )
+        # Импортируем функцию из full_test
+        from hsk4.full_test import move_to_reading_part
+        await move_to_reading_part(bot, chat_id, state)
+        return
+    else:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/45</b>"
+        )
 
-    await state.clear()
-    await get_back_to_types(bot, chat_id, Sections.listening)
+        await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.listening)

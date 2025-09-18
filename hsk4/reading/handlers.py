@@ -45,8 +45,17 @@ async def show_reading_variants(callback: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith(CALLBACK_READING_VARIANT))
-async def start_reading_variant(callback: CallbackQuery, state: FSMContext):
+async def start_reading(callback: CallbackQuery, state: FSMContext):
     var_id = int(callback.data.split("_")[-1])
+    await state.update_data(
+        variant_id=var_id
+    )
+    await start_reading_variant(callback, state)
+
+
+async def start_reading_variant(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    var_id = data["variant_id"]
 
     # Сохраняем данные варианта в состояние
     await state.update_data(
@@ -80,7 +89,7 @@ async def start_part_1(callback: CallbackQuery, state: FSMContext):
         await start_part_2(bot=callback.bot, state=state)
 
 
-async def handle_first_tasks(bot: Bot, state: FSMContext,):
+async def handle_first_tasks(bot: Bot, state: FSMContext):
     data = (await state.get_data())
     tasks = data["first_tasks"]
     index = data["index"]
@@ -339,10 +348,21 @@ async def finish_reading(bot: Bot, state: FSMContext):
     total_score = data["total_score"]
     chat_id = data["chat_id"]
 
-    await bot.send_message(
-        chat_id=chat_id,
-        text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/45</b>"
-    )
+    if data.get("is_full_test", False):
+        # Сохраняем результат чтения и переходим к письму
+        await state.update_data(
+            reading_score=total_score,
+            total_score=0
+        )
+        # Импортируем функцию из full_test
+        from hsk4.full_test import move_to_writing_part
+        await move_to_writing_part(bot, chat_id, state)
+        return
+    else:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/45</b>"
+        )
 
-    await state.clear()
-    await get_back_to_types(bot, chat_id, Sections.reading)
+        await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.reading)

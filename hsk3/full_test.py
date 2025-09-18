@@ -41,7 +41,7 @@ async def show_full_variants(callback: CallbackQuery):
     # Получаем варианты из всех разделов
     listening_variants = listening_service.get_listening_variants()
     reading_variants = reading_service.get_reading_variants()
-    writing_variants = writing_service.get_reading_variants()
+    writing_variants = writing_service.get_writing_variants()
 
     # Находим минимальное количество вариантов среди всех разделов
     min_variants_count = min(len(listening_variants), len(reading_variants), len(writing_variants))
@@ -74,7 +74,7 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     # Получаем варианты всех разделов
     listening_variants = listening_service.get_listening_variants()
     reading_variants = reading_service.get_reading_variants()
-    writing_variants = writing_service.get_reading_variants()
+    writing_variants = writing_service.get_writing_variants()
 
     # Получаем конкретные варианты по индексу
     listening_variant = listening_variants[variant_index]
