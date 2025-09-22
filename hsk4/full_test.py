@@ -142,10 +142,10 @@ async def finish_full_test(bot: Bot, chat_id: int, state: FSMContext):
 
 📊 Результаты по частям:
 🎧 Аудирование: <b>{listening_score}/45</b>
-📖 Чтение: <b>{reading_score}/45</b>
+📖 Чтение: <b>{reading_score}/40</b>
 ✏️ Письмо: <b>{writing_score}/15</b> +5 возможных баллов
 
-🏆 Итоговый результат: <b>{total_full_score}/105</b> +5 возможных баллов
+🏆 Итоговый результат: <b>{total_full_score}/100</b> +5 возможных баллов
 """
 
     await bot.send_message(chat_id, result_text)

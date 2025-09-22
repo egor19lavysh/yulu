@@ -296,7 +296,6 @@ async def handle_third_tasks(bot: Bot, chat_id: int, state: FSMContext):
         )
         await state.set_state(ListeningThirdStates.poll_answer)
     else:
-        print(total_score)
         total_score += score
 
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=20))
