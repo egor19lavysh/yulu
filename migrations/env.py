@@ -27,6 +27,7 @@ from hsk3.writing.models import *
 from hsk4.listening.models import *
 from hsk4.reading.models import *
 from hsk4.writing.models import *
+from subscription.models import *
 
 target_metadata = Base.metadata
 
