@@ -113,6 +113,6 @@ class ReadingService:
         return orm_tasks
     
 
-session = next(get_db_session())
-repository = ReadingRepository(session)
+
+repository = ReadingRepository()
 service = ReadingRepository(repository)
