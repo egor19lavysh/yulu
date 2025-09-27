@@ -107,6 +107,6 @@ class ListeningService:
         return orm_tasks
     
 
-session = next(get_db_session())
-repository = ListeningRepository(session)
+
+repository = ListeningRepository()
 service = ListeningService(repository)

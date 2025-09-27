@@ -15,6 +15,8 @@ class ReadingHSK1(Base):
                                                                             back_populates="reading_var")
     third_type_tasks: Mapped[list["ReadingThirdTaskHSK1"]] = relationship("ReadingThirdTaskHSK1",
                                                                           back_populates="reading_var")
+    fourth_type_tasks: Mapped[list["ReadingFourthTaskHSK1"]] = relationship("ReadingFourthTaskHSK1",
+                                                                          back_populates="reading_var")
     
 class ReadingFirstTaskHSK1(Base):
     __tablename__ = "hsk1_reading_first_tasks"
