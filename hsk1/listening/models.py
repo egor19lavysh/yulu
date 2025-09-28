@@ -86,7 +86,7 @@ class FourthTaskHSK1(Base):
     questions: Mapped[list["FourthTaskHSK1Option"]] = relationship("FourthTaskHSK1Option", back_populates="task")
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk1_listening_fourth_tasks.id"))
-    task: Mapped["FourthTaskHSK1"] = relationship("FourthTaskHSK1", back_populates="options")
+    task: Mapped["ListeningHSK1"] = relationship("ListeningHSK1", back_populates="fourth_type_tasks")
 
 
 class FourthTaskHSK1Question(Base):

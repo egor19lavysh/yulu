@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, List
 from database import get_db_session
 from .repository import ReadingRepository
-from hsk1.reading.schemas import *
+from hsk2.reading.schemas import *
 from .schemas import *
 
 
@@ -37,58 +37,44 @@ class ReadingService:
             orm_task = FirstTaskSchema(
                 id=task.id,
                 picture_id=task.picture_id,
-                options=[
-                    FirstTaskOptionSchema.model_validate(option) for option in task.options
+                sentences=[
+                    FirstTaskSentenceSchema.model_validate(sentence) for sentence in task.sentences
                 ]
             )
 
             orm_tasks.append(orm_task)
 
         return orm_tasks
-
+    
     def get_second_tasks_by_variant(self, variant_id: int) -> List[SecondTaskSchema]:
-        """Получает задания первого типа для варианта"""
-        tasks = self.repo.get_first_tasks_by_variant(variant_id)
+        """Получает задания второго типа для варианта"""
+        tasks = self.repo.get_second_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
         orm_tasks = []
         for task in tasks:
-            orm_task = FirstTaskSchema(
+            orm_task = SecondTaskSchema(
                 id=task.id,
-                picture_id=task.picture_id,
-                sentences=[
-                    SecondTaskSentenceSchema.model_validate(sentence) for sentence in task.sentences
+                options=[
+                    SecondTaskOptionSchema.model_validate(option) for option in task.options
+                ],
+                questions=[
+                    SecondTaskQuestionSchema.model_validate(question) for question in task.questions
                 ]
             )
 
             orm_tasks.append(orm_task)
 
         return orm_tasks
-
+    
     def get_third_tasks_by_variant(self, variant_id: int) -> List[ThirdTaskSchema]:
         """Получает задания третьего типа для варианта"""
         tasks = self.repo.get_third_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
-        orm_tasks = []
-        for task in tasks:
-            orm_task = ThirdTaskSchema(
-                id=task.id,
-                picture_id=task.picture_id,
-                options=[
-                    ThirdTaskOptionSchema.model_validate(option) for option in task.options
-                ],
-                sentences=[
-                    ThirdTaskSentenceSchema.model_validate(sentence) for sentence in task.sentences
-                ]
-
-            )
-
-            orm_tasks.append(orm_task)
-
-        return orm_tasks
+        return [ThirdTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
     
     def get_fourth_tasks_by_variant(self, variant_id: int) -> List[FourthTaskSchema]:
         """Получает задания третьего типа для варианта"""
@@ -111,8 +97,7 @@ class ReadingService:
             orm_tasks.append(orm_task)
 
         return orm_tasks
-    
 
 
 repository = ReadingRepository()
-service = ReadingRepository(repository)
+service = ReadingService(repository)
