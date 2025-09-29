@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from sqlalchemy.orm import Session, selectinload
-from typing import List
 from hsk1.listening.models import *
 from sqlalchemy import select
 from database import get_db_session

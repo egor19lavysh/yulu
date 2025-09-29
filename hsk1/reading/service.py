@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional, List
-from database import get_db_session
 from .repository import ReadingRepository
 from hsk1.reading.schemas import *
 from .schemas import *

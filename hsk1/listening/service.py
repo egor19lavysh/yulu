@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional, List
-from database import get_db_session
 from .repository import ListeningRepository
 from hsk1.listening.schemas import *
 from .schemas import *
