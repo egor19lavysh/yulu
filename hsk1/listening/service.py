@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List
-from .repository import ListeningRepository
+from .repository import ListeningRepository, repository
 from hsk1.listening.schemas import *
 from .schemas import *
 
@@ -106,6 +106,4 @@ class ListeningService:
         return orm_tasks
     
 
-
-repository = ListeningRepository()
-service = ListeningService(repository)
+service = ListeningService(repository=repository)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List
-from .repository import ReadingRepository
+from .repository import ReadingRepository, repository
 from hsk1.reading.schemas import *
 from .schemas import *
 
@@ -112,6 +112,4 @@ class ReadingService:
         return orm_tasks
     
 
-
-repository = ReadingRepository()
-service = ReadingRepository(repository)
+service = ReadingRepository(repository=repository)
