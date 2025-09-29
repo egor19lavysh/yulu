@@ -19,23 +19,24 @@ class FirstTaskSchema(Base):
     sentences: list[FirstTaskSentenceSchema]
 
 
-class SecondTaskQuestionSchema(Base):
+class SecondTaskSentenceSchema(Base):
     text: str
     correct_letter: str
 
 
 class SecondTaskOptionSchema(Base):
-    correct_letter: str
+    letter: str
     text: str
 
 
 class SecondTaskSchema(Base):
     options: list[SecondTaskOptionSchema]
-    qustions: list[SecondTaskQuestionSchema]
+    sentences: list[SecondTaskSentenceSchema]
 
 
 class ThirdTaskSchema(Base):
-    text: str
+    first_sentence: str
+    second_sentence: str
     is_correct: bool
 
 
@@ -50,8 +51,8 @@ class FourthTaskOptionSchema(Base):
 
 
 class FourthTaskSchema(Base):
-    options: list[SecondTaskOptionSchema]
-    qustions: list[SecondTaskQuestionSchema]
+    options: list[FourthTaskQuestionSchema]
+    qustions: list[FourthTaskOptionSchema]
 
 
 class ReadingVariantSchema(Base):

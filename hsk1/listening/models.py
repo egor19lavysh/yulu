@@ -33,8 +33,8 @@ class FirstTaskHSK1Question(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     is_correct: Mapped[bool]
 
-    task_id: Mapped[int] = mapped_column(ForeignKey("listening_first_tasks.id"))
-    task = relationship("FirstTask", back_populates="questions")
+    task_id: Mapped[int] = mapped_column(ForeignKey("hsk1_listening_first_tasks.id"))
+    task = relationship("FirstTaskHSK1", back_populates="questions")
 
 
 class SecondTaskHSK1(Base):
@@ -85,8 +85,8 @@ class FourthTaskHSK1(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     questions: Mapped[list["FourthTaskHSK1Option"]] = relationship("FourthTaskHSK1Option", back_populates="task")
 
-    task_id: Mapped[int] = mapped_column(ForeignKey("hsk1_listening_fourth_tasks.id"))
-    task: Mapped["ListeningHSK1"] = relationship("ListeningHSK1", back_populates="fourth_type_tasks")
+    listening_var_id: Mapped[int] = mapped_column(ForeignKey("hsk1_listening_tasks.id"))
+    listening_var: Mapped["ListeningHSK1"] = relationship("ListeningHSK1", back_populates="fourth_type_tasks")
 
 
 class FourthTaskHSK1Question(Base):

@@ -62,7 +62,7 @@ class ReadingRepository:
             tasks = session.execute(
                 select(ReadingFourthTaskHSK1)
                 .options(
-                    selectinload(ReadingFourthTaskHSK1.questions),
+                    selectinload(ReadingFourthTaskHSK1.sentences),
                     selectinload(ReadingFourthTaskHSK1.options)  # Загружаем опции для каждого вопроса
                 )
                 .where(ReadingFourthTaskHSK1.listening_var_id == variant_id)

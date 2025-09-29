@@ -40,7 +40,7 @@ class ReadingRepository:
             tasks = session.execute(
                 select(ReadingSecondTaskHSK2)
                 .options(
-                    selectinload(ReadingSecondTaskHSK2.questions),
+                    selectinload(ReadingSecondTaskHSK2.sentences),
                     selectinload(ReadingSecondTaskHSK2.options)
                 )
                 .where(ReadingSecondTaskHSK2.listening_var_id == variant_id)

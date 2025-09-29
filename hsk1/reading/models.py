@@ -49,7 +49,7 @@ class ReadingSecondTaskHSK1(Base):
     reading_var: Mapped["ReadingHSK1"] = relationship("ReadingHSK1", back_populates="second_type_tasks")
 
 class ReadingSecondTaskHSK1Sentence(Base):
-    __tablename__ = "hsk1_reading_second_tasks"
+    __tablename__ = "hsk1_reading_second_tasks_sentences"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     text: Mapped[str]
@@ -63,7 +63,6 @@ class ReadingThirdTaskHSK1(Base):
     __tablename__ = "hsk1_reading_third_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    text: Mapped[str]
     sentences: Mapped[list["ReadingThirdTaskHSK1Sentence"]] = relationship("ReadingThirdTaskHSK1Sentence", back_populates="task")
     options: Mapped[list["ReadingThirdTaskHSK1Option"]] = relationship("ReadingThirdTaskHSK1Sentance", back_populates="task")
 
@@ -86,7 +85,7 @@ class ReadingThirdTaskHSK1Option(Base):
     __tablename__ = "hsk1_reading_third_tasks_options"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    correct_letter: Mapped[str] = mapped_column(String(1))
+    letter: Mapped[str] = mapped_column(String(1))
     text: Mapped[str]
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk1_reading_third_tasks.id"))
@@ -99,7 +98,7 @@ class ReadingFourthTaskHSK1(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     options: Mapped[list["ReadingFourthTaskHSK1Option"]] = relationship("ReadingFourthTaskHSK1Option", back_populates="task")
-    questions: Mapped[list["ReadingFourthTaskHSK1Question"]] = relationship("ReadingFourthTaskHSK1Question", back_populates="task")
+    sentences: Mapped[list["ReadingFourthTaskHSK1Sentence"]] = relationship("ReadingFourthTaskHSK1Sentence", back_populates="task")
 
     reading_var_id: Mapped[int] = mapped_column(ForeignKey("hsk1_reading_tasks.id"))
     reading_var: Mapped["ReadingHSK1"] = relationship("ReadingHSK1", back_populates="fourth_type_tasks")
@@ -109,19 +108,19 @@ class ReadingFourthTaskHSK1Option(Base):
     __tablename__ = "hsk1_reading_fourth_tasks_options"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    correct_letter: Mapped[str] = mapped_column(String(1))
+    letter: Mapped[str] = mapped_column(String(1))
     text: Mapped[str]
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk1_reading_fourth_tasks.id"))
     task: Mapped["ReadingFourthTaskHSK1"] = relationship("ReadingFourthTaskHSK1", back_populates="options")
 
 
-class ReadingFourthTaskHSK1Question(Base):
-    __tablename__ = "hsk1_reading_fourth_tasks_questions"
+class ReadingFourthTaskHSK1Sentence(Base):
+    __tablename__ = "hsk1_reading_fourth_tasks_sentences"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     text: Mapped[str]
     correct_letter: Mapped[str] = mapped_column(String(1))
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk1_reading_fourth_tasks.id"))
-    task: Mapped["ReadingFourthTaskHSK1"] = relationship("ReadingFourthTaskHSK1", back_populates="questions")
+    task: Mapped["ReadingFourthTaskHSK1"] = relationship("ReadingFourthTaskHSK1", back_populates="sentences")

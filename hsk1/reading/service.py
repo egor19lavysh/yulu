@@ -100,8 +100,8 @@ class ReadingService:
         for task in tasks:
             orm_task = FourthTaskSchema(
                 id=task.id,
-                questions=[
-                    FourthTaskQuestionSchema.model_validate(question) for question in task.questions
+                sentences=[
+                    FourthTaskSentenceSchema.model_validate(sentence) for sentence in task.sentences
                 ],
                 options=[
                     FourthTaskOptionSchema.model_validate(option) for option in task.options

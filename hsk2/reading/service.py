@@ -59,8 +59,8 @@ class ReadingService:
                 options=[
                     SecondTaskOptionSchema.model_validate(option) for option in task.options
                 ],
-                questions=[
-                    SecondTaskQuestionSchema.model_validate(question) for question in task.questions
+                sentences=[
+                    SecondTaskSentenceSchema.model_validate(sentence) for sentence in task.sentences
                 ]
             )
 

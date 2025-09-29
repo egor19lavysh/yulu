@@ -39,7 +39,7 @@ class SecondTaskSchema(BaseModel):
 
 class ThirdTaskOptionSchema(BaseModel):
     id: int
-    correct_letter: str
+    letter: str
     text: str
 
     class Config:
@@ -57,7 +57,6 @@ class ThirdTaskSentenceSchema(BaseModel):
 
 class ThirdTaskSchema(BaseModel):
     id: int
-    picture_id: str
     options: list[ThirdTaskOptionSchema]
     sentences: list[ThirdTaskSentenceSchema]
 
@@ -67,17 +66,17 @@ class ThirdTaskSchema(BaseModel):
 
 class FourthTaskOptionSchema(BaseModel):
     id: int
-    correct_letter: str
+    letter: str
     text: str
 
     class Config:
         from_attributes = True
 
 
-class FourthTaskQuestionSchema(BaseModel):
+class FourthTaskSentenceSchema(BaseModel):
     id: int
-    correct_letter: str
     text: str
+    correct_letter: str
 
     class Config:
         from_attributes = True
@@ -85,15 +84,11 @@ class FourthTaskQuestionSchema(BaseModel):
 
 class FourthTaskSchema(BaseModel):
     id: int
-    questions: list[FourthTaskQuestionSchema]
     options: list[FourthTaskOptionSchema]
+    sentences: list[FourthTaskSentenceSchema]
 
     class Config:
         from_attributes = True
 
 class ReadingVariantSchema(BaseModel):
     id: int
-    first_tasks: List[FirstTaskSchema]
-    second_tasks: List[SecondTaskSchema]
-    third_tasks: List[ThirdTaskSchema]
-    fourth_tasks: List[FourthTaskSchema]
