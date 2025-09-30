@@ -26,7 +26,31 @@ class WritingService:
 
         return orm_tasks
 
-    # def get_second_task_by_variant(self, var_id: int) -> SecondTaskSchema:
+    def get_second_tasks_by_variant(self, var_id: int) -> list[SecondTaskSchema]:
+        tasks = self.repository.get_second_tasks_by_variant(variant_id=var_id)
+        orm_tasks = []
+
+        for task in tasks:
+            orm_task = SecondTaskSchema(
+                id=task.id,
+                text=task.text
+            )
+            orm_tasks.append(orm_task)
+
+        return orm_tasks
+    
+    def get_third_tasks_by_variant(self, var_id: int) -> list[ThirdTaskSchema]:
+        tasks = self.repository.get_third_tasks_by_variant(variant_id=var_id)
+        orm_tasks = []
+
+        for task in tasks:
+            orm_task = ThirdTaskSchema(
+                id=task.id,
+                picture_id=task.picture_id
+            )
+            orm_tasks.append(orm_task)
+
+        return orm_tasks
 
 
 service = WritingService(repository=repository)

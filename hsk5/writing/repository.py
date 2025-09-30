@@ -22,7 +22,21 @@ class WritingRepository:
             ).scalars().all()
             return tasks
 
-    # def get_second_task_by_variant(self, variant_id: int) -> WritingSecondTaskHSK5 | None:
+    def get_second_tasks_by_variant(self, variant_id: int) -> list[WritingSecondTaskHSK5]:
+        with self.db_session as session:
+            tasks = session.execute(
+                select(WritingSecondTaskHSK5)
+                .where(WritingSecondTaskHSK5.writing_var_id == variant_id)
+            ).scalars().all()
+            return tasks
+    
+    def get_third_tasks_by_variant(self, variant_id: int) -> list[WritingThirdTaskHSK5]:
+        with self.db_session as session:
+            tasks = session.execute(
+                select(WritingThirdTaskHSK5)
+                .where(WritingThirdTaskHSK5.writing_var_id == variant_id)
+            ).scalars().all()
+            return tasks
 
 
 session = next(get_db_session())

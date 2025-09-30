@@ -14,7 +14,11 @@ class FirstTaskSchema(Base):
 
 
 class SecondTaskSchema(Base):
-    pass
+    text: str
+
+
+class ThirdTaskSchema(Base):
+    picture_id: str
 
 
 class WritingSchema(Base):
