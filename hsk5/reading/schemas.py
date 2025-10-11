@@ -8,15 +8,20 @@ class Base(BaseModel):
         from_attributes = True
 
 
-class FirstTaskOptionSchema(Base):
+class FirstTaskQuestionOptionSchema(Base):
     letter: str
     text: str
 
 
-class FirstTaskSchema(Base):
+class FirstTaskQuestionSchema(Base):
     text: str
     correct_letter: str
-    options: list[FirstTaskOptionSchema]
+    options: list[FirstTaskQuestionOptionSchema]
+
+
+class FirstTaskSchema(Base):
+    text: str
+    questions: list[FirstTaskQuestionSchema]
 
 
 class SecondTaskOptionSchema(Base):
@@ -30,7 +35,7 @@ class SecondTaskSchema(Base):
     options: list[SecondTaskOptionSchema]
 
 
-class QuestionOptionSchema(Base):
+class ThirdTaskQuestionOptionSchema(Base):
     letter: str
     text: str
 
@@ -38,10 +43,11 @@ class QuestionOptionSchema(Base):
 class ThirdTaskQuestionSchema(Base):
     text: str
     correct_letter: str
-    options: list[QuestionOptionSchema]
+    options: list[ThirdTaskQuestionOptionSchema]
 
 
 class ThirdTaskSchema(Base):
+    photo_id: str | None
     text: str
     questions: list[ThirdTaskQuestionSchema]
 

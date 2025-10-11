@@ -18,7 +18,7 @@ class ReadingRepository:
         with self.db_session as session:
             tasks = session.execute(
                 select(ReadingFirstTaskHSK5)
-                .options(selectinload(ReadingFirstTaskHSK5.options))
+                .options(selectinload(ReadingFirstTaskHSK5.questions).joinedload(ReadingFirstTaskHSK5Question.options))
                 .where(ReadingFirstTaskHSK5.reading_var_id == variant_id)
             ).scalars().all()
             return tasks

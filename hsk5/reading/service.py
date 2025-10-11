@@ -19,8 +19,12 @@ class ReadingService:
             orm_task = FirstTaskSchema(
                 id=task.id,
                 text=task.text,
-                correct_letter=task.correct_letter,
-                options=[FirstTaskOptionSchema.model_validate(option) for option in task.options]
+                questions=[FirstTaskQuestionSchema(
+                    id=question.id,
+                    text=question.text,
+                    correct_letter=question.correct_letter,
+                    options=[FirstTaskQuestionOptionSchema.model_validate(option) for option in question.options]
+                ) for question in task.questions]
             )
             orm_tasks.append(orm_task)
 
@@ -47,12 +51,13 @@ class ReadingService:
         for task in tasks:
             orm_task = ThirdTaskSchema(
                 id=task.id,
+                photo_id=task.photo_id,
                 text=task.text,
                 questions=[ThirdTaskQuestionSchema(
                     id=question.id,
                     text=question.text,
                     correct_letter=question.correct_letter,
-                    options=[QuestionOptionSchema.model_validate(option) for option in question.options]
+                    options=[ThirdTaskQuestionOptionSchema.model_validate(option) for option in question.options]
                 ) for question in task.questions]
             )
             orm_tasks.append(orm_task)
