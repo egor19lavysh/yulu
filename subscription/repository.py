@@ -52,7 +52,7 @@ class UserRepository:
                 session.commit()
         else:
             raise Exception("Такого пользователя не сущетсвует!")
-        
+
     def update_user_used_writing(self, user_id: str) -> None:
         if user := self.get_user(user_id=user_id):
             with self.db_session as session:
@@ -62,7 +62,7 @@ class UserRepository:
             raise Exception("Такого пользователя не сущетсвует!")
         
     def delete_user(self, user_id: str) -> None:
-        if user := self.get_user(user_id=user_id):
+        if self.get_user(user_id=user_id):
             with self.db_session as session:
                 session.execute(delete(User).where(User.id == user_id))
                 session.commit()
@@ -70,3 +70,5 @@ class UserRepository:
             raise Exception("Такого пользователя не сущетсвует!")
         
             
+db_session = next(get_db_session())
+repository = UserRepository(db_session=db_session)

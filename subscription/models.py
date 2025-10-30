@@ -35,3 +35,5 @@ class User(Base):
         else:
             # Новая подписка
             self.subscription_expires = datetime.utcnow() + timedelta(days=days)
+
+

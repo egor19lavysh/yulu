@@ -217,7 +217,6 @@ async def handle_second_tasks(callback: CallbackQuery = None, state: FSMContext 
         )
         await state.set_state(ListeningSecondStates.poll_answer)
     else:
-        print(total_score)
         total_score += score
 
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=15))
@@ -267,7 +266,7 @@ async def start_part_3(callback: CallbackQuery = None, state: FSMContext = None,
 
     else:
         await bot.send_message(chat_id=chat_id, text=TEXT_NO_TASKS)
-        await bot.send_message(chat_id=chat_id, text=TEXT_PART_3)
+        #await bot.send_message(chat_id=chat_id, text=TEXT_PART_3)
         await finish_listening(bot, chat_id, state)
 
 
