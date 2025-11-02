@@ -64,24 +64,36 @@ async def start_reading(callback: CallbackQuery, state: FSMContext):
         variant_id=var_id,
         chat_id=callback.message.chat.id
     )
-    await start_reading_variant(callback, state)
+    await start_reading_variant(callback=callback, state=state)
 
 
-async def start_reading_variant(callback: CallbackQuery, state: FSMContext):
+async def start_reading_variant(state: FSMContext, callback: CallbackQuery = None, bot: Bot = None):
+    if bot is None:
+        bot = callback.bot
+    
     data = await state.get_data()
-    var_id = data["variant_id"]
 
-    await callback.message.delete()
+    if data.get("listening_variant_id", False):
+        var_id = data["reading_variant_id"]
+    else:
+        var_id = data["variant_id"]
+
+    chat_id = data["chat_id"]
+
+    if callback:
+        await callback.message.delete()
+        await callback.answer()
+
 
     # Сохраняем данные варианта в состояние
     await state.update_data(
+        variant_id=var_id,
         total_score=0,
     )
 
     # Запускаем первую часть
-    await callback.message.answer(TEXT_PART_1)
-    await start_part_1(callback.bot, state)
-    await callback.answer()
+    await bot.send_message(chat_id, TEXT_PART_1)
+    await start_part_1(bot, state)
 
 async def start_part_1(bot: Bot, state: FSMContext):
     data = await state.get_data()
@@ -294,7 +306,6 @@ async def handle_third_task(bot: Bot, state: FSMContext):
         )
 
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=5))
-        await bot.send_message(chat_id=chat_id, text=TEXT_PART_4)
         await start_part_4(bot, state)
 
 @router.poll_answer(ReadingThirdTask.answer)
@@ -387,10 +398,18 @@ async def finish_reading(bot: Bot, state: FSMContext):
     data = await state.get_data()
     chat_id = data["chat_id"]
     total_score = data["total_score"]
-    await bot.send_message(
+
+    await state.update_data(
+        reading_score=total_score,
+    )
+    if data.get("is_full_test", False):
+        from hsk1.full_test import finish_full_test
+        await finish_full_test(bot=bot, state=state)
+    else:
+        await bot.send_message(
             chat_id=chat_id,
             text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/20</b>"
         )
 
-    await state.clear()
-    await get_back_to_types(bot, chat_id, Sections.reading)
+        await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.reading)

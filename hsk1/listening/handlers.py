@@ -64,7 +64,11 @@ async def start_listening(callback: CallbackQuery, state: FSMContext):
 
 async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    var_id = data["variant_id"]
+    if data.get("listening_variant_id", False):
+        var_id = data["listening_variant_id"]
+    else:
+        var_id = data["variant_id"]
+
     variant = service.get_listening_variant(variant_id=var_id)
 
     await callback.answer()
@@ -418,11 +422,25 @@ async def finish_listening(bot: Bot, state: FSMContext):
     data = await state.get_data()
     chat_id = data["chat_id"]
     total_score = data["total_score"]
-    await bot.send_message(
+
+    if data.get("is_full_test", False):
+        await state.update_data(
+            listening_score=total_score
+        )
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"Аудирование заврешено!\nПереходим к чтению."
+        )
+
+        from hsk1.reading.handlers import start_reading_variant
+        await start_reading_variant(bot=bot, state=state)
+    else:
+
+        await bot.send_message(
             chat_id=chat_id,
             text=f"{TEXT_ALL_PARTS_COMPLETED}\nОбщий результат: <b>{total_score}/20</b>"
         )
 
-    await state.clear()
-    await get_back_to_types(bot, chat_id, Sections.listening)
+        await state.clear()
+        await get_back_to_types(bot, chat_id, Sections.listening)
 
