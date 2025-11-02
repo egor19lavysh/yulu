@@ -8,6 +8,7 @@ from aiogram.types import BotCommand, Message, KeyboardButton
 
 from config import settings
 from hsk1 import routers as hsk1_routers
+from hsk2 import routers as hsk2_routers
 from hsk3 import routers as hsk3_routers
 from hsk4 import routers as hsk4_routers
 from subscription import router as sub_router
@@ -98,6 +99,9 @@ async def get_levels(msg: Message):
 # Запуск процесса поллинга новых апдейтов
 async def main():
     for router in hsk1_routers:
+        dp.include_router(router)
+
+    for router in hsk2_routers:
         dp.include_router(router)
 
     for router in hsk3_routers:
