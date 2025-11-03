@@ -9,17 +9,17 @@ from .schemas import *
 class ReadingService:
     repo: ReadingRepository
 
-    def get_listening_variants(self) -> List[ReadingVariantSchema]:
+    def get_reading_variants(self) -> List[ReadingVariantSchema]:
         """Получает все доступные варианты listening заданий"""
-        variants = self.repo.get_listening_variants()
+        variants = self.repo.get_reading_variants()
         if not variants:
             return []
 
         return [ReadingVariantSchema.model_validate(variant, from_attributes=True) for variant in variants]
     
-    def get_listening_variant(self, variant_id: int) -> Optional[ReadingVariantSchema]:
+    def get_reading_variant(self, variant_id: int) -> Optional[ReadingVariantSchema]:
         """Получает конкретный вариант по ID"""
-        variant = self.repo.get_listening_variant(variant_id)
+        variant = self.repo.get_reading_variant(variant_id)
         if not variant:
             return None
 
@@ -98,4 +98,4 @@ class ReadingService:
         return orm_tasks
 
 
-service = ReadingService(repository=repository)
+service = ReadingService(repo=repository)

@@ -51,8 +51,8 @@ class FourthTaskOptionSchema(Base):
 
 
 class FourthTaskSchema(Base):
-    options: list[FourthTaskQuestionSchema]
-    qustions: list[FourthTaskOptionSchema]
+    options: list[FourthTaskOptionSchema]
+    questions: list[FourthTaskQuestionSchema]
 
 
 class ReadingVariantSchema(Base):

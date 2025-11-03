@@ -10,13 +10,13 @@ from database import get_db_session
 class ReadingRepository:
     db_session: Session
 
-    def get_listening_variants(self):
+    def get_reading_variants(self):
         """Получает все доступные варианты listening заданий"""
         with self.db_session as session:
             variants = session.execute(select(ReadingHSK2)).scalars().all()
             return variants
     
-    def get_listening_variant(self, variant_id: int) -> ReadingHSK2:
+    def get_reading_variant(self, variant_id: int) -> ReadingHSK2:
         """Получает конкретный вариант по ID"""
         with self.db_session as session:
             variant = session.execute(
@@ -30,7 +30,7 @@ class ReadingRepository:
             tasks = session.execute(
                 select(ReadingFirstTaskHSK2)
                 .options(selectinload(ReadingFirstTaskHSK2.sentences))
-                .where(ReadingFirstTaskHSK2.listening_var_id == variant_id)
+                .where(ReadingFirstTaskHSK2.reading_var_id == variant_id)
             ).scalars().all()
             return tasks
     
@@ -43,7 +43,7 @@ class ReadingRepository:
                     selectinload(ReadingSecondTaskHSK2.sentences),
                     selectinload(ReadingSecondTaskHSK2.options)
                 )
-                .where(ReadingSecondTaskHSK2.listening_var_id == variant_id)
+                .where(ReadingSecondTaskHSK2.reading_var_id == variant_id)
             ).scalars().all()
             return tasks
     
@@ -66,7 +66,7 @@ class ReadingRepository:
                     selectinload(ReadingFourthTaskHSK2.questions),
                     selectinload(ReadingFourthTaskHSK2.options)  # Загружаем опции для каждого вопроса
                 )
-                .where(ReadingFourthTaskHSK2.listening_var_id == variant_id)
+                .where(ReadingFourthTaskHSK2.reading_var_id == variant_id)
             ).scalars().all()
             return tasks
 

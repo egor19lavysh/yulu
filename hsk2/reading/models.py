@@ -19,7 +19,7 @@ class ReadingHSK2(Base):
                                                                           back_populates="reading_var")
     
 class ReadingFirstTaskHSK2(Base):
-    __tablename__ = "hsk2_reading_second_tasks"
+    __tablename__ = "hsk2_reading_first_tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     picture_id: Mapped[str]
@@ -29,14 +29,14 @@ class ReadingFirstTaskHSK2(Base):
     reading_var: Mapped["ReadingHSK2"] = relationship("ReadingHSK2", back_populates="first_type_tasks")
 
 class ReadingFirstTaskHSK2Sentence(Base):
-    __tablename__ = "hsk2_reading_second_tasks"
+    __tablename__ = "hsk2_reading_first_tasks_sentences"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     text: Mapped[str]
     correct_letter: Mapped[str] = mapped_column(String(1))
 
-    task_id: Mapped[int] = mapped_column(ForeignKey("hsk2_reading_second_tasks.id"))
-    task: Mapped["ReadingFirstTaskHSK2"] = relationship("ReadingFirstTaskHSK2", back_populates="sentence")
+    task_id: Mapped[int] = mapped_column(ForeignKey("hsk2_reading_first_tasks.id"))  # Fixed this line
+    task: Mapped["ReadingFirstTaskHSK2"] = relationship("ReadingFirstTaskHSK2", back_populates="sentences")  # Fixed back_populates name
 
 
 class ReadingSecondTaskHSK2(Base):
@@ -70,7 +70,7 @@ class ReadingSecondTaskHSK2Sentence(Base):
     correct_letter: Mapped[str] = mapped_column(String(1))
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk2_reading_second_tasks.id"))
-    task: Mapped["ReadingSecondTaskHSK2"] = relationship("ReadingSecondTaskHSK2", back_populates="questions")
+    task: Mapped["ReadingSecondTaskHSK2"] = relationship("ReadingSecondTaskHSK2", back_populates="sentences")  # Fixed back_populates name
 
 
 class ReadingThirdTaskHSK2(Base):
@@ -94,7 +94,7 @@ class ReadingFourthTaskHSK2(Base):
     questions: Mapped[list["ReadingFourthTaskHSK2Question"]] = relationship("ReadingFourthTaskHSK2Question", back_populates="task")
 
     reading_var_id: Mapped[int] = mapped_column(ForeignKey("hsk2_reading_tasks.id"))
-    reading_var: Mapped["ReadingHSK2"] = relationship("ReadingHSK2", back_populates="third_tasks")
+    reading_var: Mapped["ReadingHSK2"] = relationship("ReadingHSK2", back_populates="fourth_type_tasks")  # Fixed back_populates name
 
 
 class ReadingFourthTaskHSK2Option(Base):
@@ -117,4 +117,3 @@ class ReadingFourthTaskHSK2Question(Base):
 
     task_id: Mapped[int] = mapped_column(ForeignKey("hsk2_reading_fourth_tasks.id"))
     task: Mapped["ReadingFourthTaskHSK2"] = relationship("ReadingFourthTaskHSK2", back_populates="questions")
-
