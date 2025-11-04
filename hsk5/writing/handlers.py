@@ -206,7 +206,7 @@ async def finish_writing(bot: Bot, state: FSMContext):
     total_score = data["total_score"]
 
     await state.update_data(
-        reading_score=total_score,
+        writing_score=total_score,
     )
 
     if data.get("is_full_test", False):
