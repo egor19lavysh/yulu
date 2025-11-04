@@ -11,6 +11,7 @@ from hsk1 import routers as hsk1_routers
 from hsk2 import routers as hsk2_routers
 from hsk3 import routers as hsk3_routers
 from hsk4 import routers as hsk4_routers
+from hsk5 import routers as hsk5_routers
 from subscription import router as sub_router
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -108,6 +109,9 @@ async def main():
         dp.include_router(router)
 
     for router in hsk4_routers:
+        dp.include_router(router)
+
+    for router in hsk5_routers:
         dp.include_router(router)
 
     dp.include_router(sub_router)
