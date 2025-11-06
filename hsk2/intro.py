@@ -21,7 +21,8 @@ async def show_sections_menu(chat_id: int, bot: Bot = None, msg: Message = None)
         InlineKeyboardButton(text="🎧 Аудирование", callback_data=Sections.listening),
         InlineKeyboardButton(text="📖 Чтение", callback_data=Sections.reading),
         InlineKeyboardButton(text="🔤 Лексика", callback_data=Sections.words),
-        InlineKeyboardButton(text="🎯 Целый вариант", callback_data=Sections.full_test)
+        InlineKeyboardButton(text="🎯 Целый вариант", callback_data=Sections.full_test),
+        InlineKeyboardButton(text="Назад", callback_data="levels")
     ]
 
     builder.add(*buttons)

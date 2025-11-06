@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters.command import Command
-from aiogram.types import BotCommand, Message, KeyboardButton
+from aiogram.types import BotCommand, Message, KeyboardButton, CallbackQuery
 
 from config import settings
 from hsk1 import routers as hsk1_routers
@@ -72,20 +72,17 @@ async def handle_media(message: types.Message):
             await message.reply(f"🔊 Audio file_id: <code>{file_id}</code>", parse_mode="HTML")
 
 
-# async def set_bot_commands(dp):
-#     commands = [
-#         BotCommand("start", "Запустить бота"),
-#         BotCommand("help", "Помощь и функции"),
-#         BotCommand("1", "1")
-#     ]
-#     await dp.bot.set_my_commands(commands)
+@dp.callback_query(F.data == "levels")
+async def get_levels_callback(callback: CallbackQuery):
+    await callback.message.delete()
+    await get_levels(callback.message)
 
 @dp.message(Command("levels"))
 async def get_levels(msg: Message):
     levels_kb = [
         [KeyboardButton(text="/hsk1"), KeyboardButton(text="/hsk2")],
         [KeyboardButton(text="/hsk3"), KeyboardButton(text="/hsk4")],
-        [KeyboardButton(text="/hsk5"), KeyboardButton(text="/hsk6")]
+        [KeyboardButton(text="/hsk5")]
     ]
 
     keyboard = types.ReplyKeyboardMarkup(

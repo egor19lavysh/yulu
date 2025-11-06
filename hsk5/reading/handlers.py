@@ -48,6 +48,12 @@ async def show_reading_variants(callback: CallbackQuery):
                     callback_data=f"{CALLBACK_READING_VARIANT}_{variant.id}"
                 )
             )
+        builder.add(
+            InlineKeyboardButton(
+                text="Назад",
+                callback_data="back_to_sections_hsk5"
+            )
+        )
         builder.adjust(1)
         await callback.message.answer(TEXT_CHOOSE_VARIANT, reply_markup=builder.as_markup())
     else:
