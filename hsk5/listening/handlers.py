@@ -59,7 +59,12 @@ async def start_listening(callback: CallbackQuery, state: FSMContext):
 
 async def start_listening_variant(bot: Bot, state: FSMContext):
     data = await state.get_data()
-    var_id = data["variant_id"]
+
+    if data.get("listening_variant_id", False):
+        var_id = data["listening_variant_id"]
+    else:
+        var_id = data["variant_id"]
+
     chat_id = data["chat_id"]
     variant = service.get_listening_variant(variant_id=var_id)
 
@@ -69,7 +74,8 @@ async def start_listening_variant(bot: Bot, state: FSMContext):
 
     # Сохраняем данные варианта в состояние
     await state.update_data(
-        total_score=0
+        total_score=0,
+        variant_id=var_id 
     )
 
     await bot.send_audio(chat_id, variant.audio_id)
@@ -160,8 +166,8 @@ async def finish_listening(bot: Bot, state: FSMContext):
             text=f"Аудирование завершено!\nПереходим к чтению."
         )
 
-        # from hsk2.reading.handlers import start_reading_variant
-        # await start_reading_variant(bot=bot, state=state)
+        from hsk5.reading.handlers import start_reading_variant
+        await start_reading_variant(bot=bot, state=state)
     else:
         await bot.send_message(
             chat_id=chat_id,

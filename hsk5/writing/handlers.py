@@ -62,8 +62,14 @@ async def start_writing_variant(bot: Bot, state: FSMContext):
     data = await state.get_data()
     chat_id = data["chat_id"]
 
+    if data.get("writing_variant_id", False):
+        var_id = data["writing_variant_id"]
+    else:
+        var_id = data["variant_id"]
+
     await state.update_data(
-        total_score=0
+        total_score=0,
+        variant_id=var_id
     )
 
     await bot.send_message(chat_id, TEXT_PART_1)
@@ -210,8 +216,8 @@ async def finish_writing(bot: Bot, state: FSMContext):
     )
 
     if data.get("is_full_test", False):
-        from hsk1.full_test import finish_full_test
-        # await finish_full_test(bot=bot, state=state)
+        from hsk5.full_test import finish_full_test
+        await finish_full_test(bot=bot, state=state)
     else:
         await bot.send_message(
             chat_id=chat_id,

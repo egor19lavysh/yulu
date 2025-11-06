@@ -73,7 +73,7 @@ async def start_reading_variant(state: FSMContext, callback: CallbackQuery = Non
     
     data = await state.get_data()
 
-    if data.get("listening_variant_id", False):
+    if data.get("reading_variant_id", False):
         var_id = data["reading_variant_id"]
     else:
         var_id = data["variant_id"]
@@ -366,8 +366,16 @@ async def finish_reading(bot: Bot, state: FSMContext):
     )
 
     if data.get("is_full_test", False):
-        from hsk1.full_test import finish_full_test
-        # await finish_full_test(bot=bot, state=state)
+        await state.update_data(
+            reading_score=total_score
+        )
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"Чтение завершено!\nПереходим к письму."
+        )
+
+        from hsk5.writing.handlers import start_writing_variant
+        await start_writing_variant(bot=bot, state=state)
     else:
         await bot.send_message(
             chat_id=chat_id,
