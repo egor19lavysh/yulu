@@ -73,7 +73,7 @@ async def start_reading_variant(state: FSMContext, callback: CallbackQuery = Non
     
     data = await state.get_data()
 
-    if data.get("listening_variant_id", False):
+    if data.get("reading_variant_id", False):
         var_id = data["reading_variant_id"]
     else:
         var_id = data["variant_id"]
@@ -442,7 +442,7 @@ async def finish_reading(bot: Bot, state: FSMContext):
         reading_score=total_score,
     )
     if data.get("is_full_test", False):
-        from hsk1.full_test import finish_full_test
+        from hsk2.full_test import finish_full_test
         await finish_full_test(bot=bot, state=state)
     else:
         await bot.send_message(

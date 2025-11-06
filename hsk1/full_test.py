@@ -10,7 +10,7 @@ from hsk1.reading.service import service as reading_service
 router = Router()
 
 ###
-CALLBACK_FULL_VARIANT = "hsk4_full"
+CALLBACK_FULL_VARIANT = "hsk1_full"
 
 TEXT_CHOOSE_VARIANT = "Выберите вариант для прохождения:"
 TEXT_FULL_TEST_COMPLETED = "Полный тест HSK1 завершен! 🎉"
@@ -71,10 +71,10 @@ async def finish_full_test(bot: Bot, state: FSMContext):
 {TEXT_FULL_TEST_COMPLETED}
 
 📊 Результаты по частям:
-🎧 Аудирование: <b>{listening_score}/20</b>
-📖 Чтение: <b>{reading_score}/20</b>
+🎧 Аудирование: <b>{listening_score}/35</b>
+📖 Чтение: <b>{reading_score}/25</b>
 
-🏆 Итоговый результат: <b>{total_full_score}/40</b>
+🏆 Итоговый результат: <b>{total_full_score}/60</b>
 """
 
     await bot.send_message(chat_id, result_text)

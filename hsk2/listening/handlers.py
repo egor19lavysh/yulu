@@ -405,10 +405,9 @@ async def finish_listening(bot: Bot, state: FSMContext):
             text=f"Аудирование завершено!\nПереходим к чтению."
         )
 
-        # from hsk2.reading.handlers import start_reading_variant
-        # await start_reading_variant(bot=bot, state=state)
+        from hsk2.reading.handlers import start_reading_variant
+        await start_reading_variant(bot=bot, state=state)
     else:
-        # Общее количество вопросов для HSK2 может варьироваться
         await bot.send_message(
             chat_id=chat_id,
             text=f"{TEXT_ALL_PARTS_COMPLETED}\n{TEXT_ALL_TASKS_COMPLETED.format(score=total_score, total=35)}"

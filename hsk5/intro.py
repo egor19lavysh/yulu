@@ -46,7 +46,7 @@ async def get_back_to_types(bot: Bot, chat_id: int, section: str):
     builder = InlineKeyboardBuilder()
 
     tasks_btn = InlineKeyboardButton(text="ЗАДАНИЯ", callback_data=section)
-    sections_btn = InlineKeyboardButton(text="РАЗДЕЛЫ", callback_data="back_to_sections")
+    sections_btn = InlineKeyboardButton(text="РАЗДЕЛЫ", callback_data="back_to_sections_hsk5")
 
     builder.add(tasks_btn, sections_btn)
     builder.adjust(1)
@@ -54,7 +54,7 @@ async def get_back_to_types(bot: Bot, chat_id: int, section: str):
     await bot.send_message(chat_id=chat_id, text="Хотите вернуться?", reply_markup=builder.as_markup())
 
 
-@router.callback_query(F.data == "back_to_sections")
+@router.callback_query(F.data == "back_to_sections_hsk5")
 async def back_to_sections_handler(callback: CallbackQuery):
     await callback.message.delete()
     await show_sections_menu(callback.message.chat.id, bot=callback.bot)
