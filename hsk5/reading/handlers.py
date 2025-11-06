@@ -17,12 +17,12 @@ TEXT_CHOOSE_VARIANT = "Выберите вариант для прохожден
 TEXT_PART_1 = "Задание 1"
 TEXT_PART_2 = "Задание 2"
 TEXT_PART_3 = "Задание 3"
-TEXT_PART_4 = "Задание 4"
 
-TEXT_TASK_1 = "Текст 1"
-TEXT_TASK_2 = "Текст 2"
-TEXT_TASK_3 = "Текст 3"
-TEXT_TASK_4 = "Текст 4"
+
+TEXT_TASK_1 = "Даны несколько коротких текстов: объявления, заметки, сообщения. После каждого текста есть вопрос с вариантами ответов. Вам нужно выбрать один правильный вариант ответа."
+TEXT_TASK_2 = "Дан текст, в котором пропущено 5 предложений. Ниже даны эти предложения вперемешку, плюс 1-2 лишних. Для каждого пропуска нужно выбрать наиболее подходящее предложение из списка"
+TEXT_TASK_3 = "Вам даны 2-3 длинных текста. Ответьте на вопросы, выбрав для каждого правильный вариант ответа"
+
 
 TEXT_TRUE = "Правда"
 TEXT_FALSE = "Ложь"
@@ -212,6 +212,8 @@ async def start_part_2(bot: Bot, state: State):
             score=0
         )
 
+        await bot.send_message(chat_id, TEXT_TASK_2)
+
         await handle_second_task(bot, state)
     else:
         await bot.send_message(chat_id, "Задание не найдено... Переходим к третьему заданию")
@@ -280,6 +282,8 @@ async def start_part_3(bot: Bot, state: FSMContext):
             task_index=0,
             score=0
         )
+
+        await bot.send_message(chat_id, TEXT_TASK_3)
 
         await handle_third_task_batch(bot, state)
     else:
