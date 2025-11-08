@@ -1,9 +1,9 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class FirstTask(StatesGroup):
+class HSK4WritingFirstTask(StatesGroup):
     answer = State()
 
 
-class SecondTask(StatesGroup):
+class HSK4WritingSecondTask(StatesGroup):
     answer = State()

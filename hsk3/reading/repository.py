@@ -1,19 +1,19 @@
 import random
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 from dataclasses import dataclass
 from .models import Reading, ReadingFirstTask, ReadingSecondTask, \
     ReadingThirdTask  # Предполагается, что модели находятся в models.py
-from database import get_db_session
+from database import get_db_session_async
 
 
 @dataclass
 class ReadingRepository:
-    db_session: Session
+    db_session: AsyncSession
 
-    def get_reading_variants(self) -> list[Reading]:
-        with self.db_session as session:
-            variants = session.execute(select(Reading).options(
+    async def get_reading_variants(self) -> list[Reading]:
+        variants = (await self.db_session.execute(select(Reading).options(
                 # Загружаем First Tasks и связанные данные
                 selectinload(Reading.first_tasks)
                 .selectinload(ReadingFirstTask.options),
@@ -27,13 +27,12 @@ class ReadingRepository:
                 # Загружаем Third Tasks и связанные данные
                 selectinload(Reading.third_tasks)
                 .selectinload(ReadingThirdTask.options)
-            )).scalars().all()
-            return list(variants)
+            ))).scalars().all()
+        return list(variants)
 
-    def get_reading_variant(self, variant_id: int) -> Reading | None:
+    async def get_reading_variant(self, variant_id: int) -> Reading | None:
         """Получает полный вариант Reading по ID."""
-        with self.db_session as session:
-            stmt = (
+        stmt = (
                 select(Reading)
                 .where(Reading.id == variant_id)
                 .options(
@@ -52,23 +51,22 @@ class ReadingRepository:
                     .selectinload(ReadingThirdTask.options)
                 )
             )
-            return session.execute(stmt).scalar_one_or_none()
+        return (await self.db_session.execute(stmt)).scalar_one_or_none()
 
-    def get_random_reading_variant_with_tasks(self) -> Reading | None:
+    async def get_random_reading_variant_with_tasks(self) -> Reading | None:
         """
         Получает случайный вариант Reading с заданиями.
         Предполагает, что у вас есть записи в таблице reading_tasks.
         """
-        with self.db_session as session:
             # Получаем все ID вариантов
-            variant_ids_result = session.execute(select(Reading.id)).scalars().all()
-            if not variant_ids_result:
-                return None
+        variant_ids_result = (await self.db_session.execute(select(Reading.id))).scalars().all()
+        if not variant_ids_result:
+            return None
             # Выбираем случайный ID
-            random_variant_id = random.choice(variant_ids_result)
+        random_variant_id = random.choice(variant_ids_result)
 
             # Загружаем вариант с заданиями
-            stmt = (
+        stmt = (
                 select(Reading)
                 .where(Reading.id == random_variant_id)
                 .options(
@@ -84,12 +82,11 @@ class ReadingRepository:
                     .selectinload(ReadingThirdTask.options)
                 )
             )
-            return session.execute(stmt).scalar_one_or_none()
+        return (await self.db_session.execute(stmt)).scalar_one_or_none()
 
-    def get_first_tasks_by_variant(self, variant_id: int) -> list[ReadingFirstTask]:
+    async def get_first_tasks_by_variant(self, variant_id: int) -> list[ReadingFirstTask]:
         """Получает все задания типа 1 для указанного варианта"""
-        with self.db_session as session:
-            stmt = (
+        stmt = (
                 select(ReadingFirstTask)
                 .join(ReadingFirstTask.reading_var)
                 .where(Reading.id == variant_id)
@@ -97,12 +94,11 @@ class ReadingRepository:
                     selectinload(ReadingFirstTask.options),
                     selectinload(ReadingFirstTask.questions)
                 ))
-            return list(session.execute(stmt).scalars().all())
+        return list((await self.db_session.execute(stmt)).scalars().all())
 
-    def get_second_tasks_by_variant(self, variant_id: int) -> list[ReadingSecondTask]:
+    async def get_second_tasks_by_variant(self, variant_id: int) -> list[ReadingSecondTask]:
         """Получает все задания типа 2 для указанного варианта"""
-        with self.db_session as session:
-            stmt = (
+        stmt = (
                 select(ReadingSecondTask)
                 .join(ReadingSecondTask.reading_var)
                 .where(Reading.id == variant_id)
@@ -110,12 +106,11 @@ class ReadingRepository:
                     selectinload(ReadingSecondTask.options),
                     selectinload(ReadingSecondTask.questions)
                 ))
-            return list(session.execute(stmt).scalars().all())
+        return list((await self.db_session.execute(stmt)).scalars().all())
 
-    def get_third_tasks_by_variant(self, variant_id: int) -> list[ReadingThirdTask]:
+    async def get_third_tasks_by_variant(self, variant_id: int) -> list[ReadingThirdTask]:
         """Получает все задания типа 3 для указанного варианта"""
-        with self.db_session as session:
-            stmt = (
+        stmt = (
                 select(ReadingThirdTask)
                 .join(ReadingThirdTask.reading_var)
                 .where(Reading.id == variant_id)
@@ -123,8 +118,9 @@ class ReadingRepository:
                     selectinload(ReadingThirdTask.options)
                 )
             )
-            return list(session.execute(stmt).scalars().all())
+        return list((await self.db_session.execute(stmt)).scalars().all())
 
 
-session = next(get_db_session())
-repository = ReadingRepository(session)
+async def get_reading_repository():
+    async for session in get_db_session_async():
+        return ReadingRepository(session)

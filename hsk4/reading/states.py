@@ -1,11 +1,11 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class ReadingFirstTask(StatesGroup):
+class HSK4ReadingFirstTask(StatesGroup):
     answer = State()
 
-class ReadingSecondTask(StatesGroup):
+class HSK4ReadingSecondTask(StatesGroup):
     answer = State()
 
-class ReadingThirdTask(StatesGroup):
+class HSK4ReadingThirdTask(StatesGroup):
     answer = State()

@@ -3,10 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk5.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_listening_service
 from .states import HSK5ListeningStates
+import asyncio
+
 
 router = Router()
+service = asyncio.run(get_listening_service())
 
 ### Callback значения
 CALLBACK_LISTENING_VARIANT = "hsk5_listening_variant"
@@ -31,7 +34,7 @@ ANSWER_FALSE = "❌ Неверно!"
 
 @router.callback_query(F.data == Sections.listening)
 async def show_listening_variants(callback: CallbackQuery):
-    variants = service.get_listening_variants()
+    variants = await service.get_listening_variants()
     builder = InlineKeyboardBuilder()
     for num, variant in enumerate(variants, start=1):
         builder.add(
@@ -72,7 +75,7 @@ async def start_listening_variant(bot: Bot, state: FSMContext):
         var_id = data["variant_id"]
 
     chat_id = data["chat_id"]
-    variant = service.get_listening_variant(variant_id=var_id)
+    variant = await service.get_listening_variant(variant_id=var_id)
 
     if not variant:
         await bot.send_message(chat_id, "Вариант не найден.")
@@ -93,7 +96,7 @@ async def start_part_1(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_first_tasks_by_variant(variant_id=variant_id):
+    if tasks := await service.get_first_tasks_by_variant(variant_id=variant_id):
         await state.update_data(
             tasks=tasks,
             index=0,

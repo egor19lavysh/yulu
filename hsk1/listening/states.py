@@ -1,14 +1,14 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class ListeningFirstStates(StatesGroup):
+class HSK1ListeningFirstStates(StatesGroup):
     answer = State()
 
-class ListeningSecondStates(StatesGroup):
+class HSK1ListeningSecondStates(StatesGroup):
     answer = State()
 
-class ListeningThirdStates(StatesGroup):
+class HSK1ListeningThirdStates(StatesGroup):
     answer = State()
 
-class ListeningFourthStates(StatesGroup):
+class HSK1ListeningFourthStates(StatesGroup):
     answer = State()

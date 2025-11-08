@@ -3,11 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk2.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_listening_service
 from .states import *
+import asyncio
 
 
 router = Router()
+service = asyncio.run(get_listening_service())
 
 ### Callback значения
 CALLBACK_LISTENING_VARIANT = "hsk2_listening_variant"
@@ -34,7 +36,7 @@ ANSWER_FALSE = "❌ Неверно!"
 
 @router.callback_query(F.data == Sections.listening)
 async def show_listening_variants(callback: CallbackQuery):
-    if variants := service.get_listening_variants():
+    if variants := await service.get_listening_variants():
         builder = InlineKeyboardBuilder()
         for num, variant in enumerate(variants, start=1):
             builder.add(
@@ -73,7 +75,7 @@ async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
     else:
         var_id = data["variant_id"]
 
-    variant = service.get_listening_variant(variant_id=var_id)
+    variant = await service.get_listening_variant(variant_id=var_id)
 
     await callback.answer()
     await callback.message.delete()
@@ -100,7 +102,7 @@ async def start_part_1(bot: Bot, state: FSMContext):
     chat_id = data["chat_id"]
     variant_id = data["variant_id"]
 
-    if tasks := service.get_first_tasks_by_variant(variant_id=variant_id):
+    if tasks := await service.get_first_tasks_by_variant(variant_id=variant_id):
         task = tasks[0]
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_1)
         await bot.send_photo(chat_id, photo=task.picture_id)
@@ -197,7 +199,7 @@ async def start_part_2(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if second_tasks := service.get_second_tasks_by_variant(variant_id=variant_id):
+    if second_tasks := await service.get_second_tasks_by_variant(variant_id=variant_id):
         await bot.send_message(chat_id, TEXT_TASK_2)
 
         await state.update_data(
@@ -305,7 +307,7 @@ async def start_part_3(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if third_tasks := service.get_third_tasks_by_variant(variant_id=variant_id):
+    if third_tasks := await service.get_third_tasks_by_variant(variant_id=variant_id):
         await bot.send_message(chat_id, TEXT_TASK_3)
 
         await state.update_data(

@@ -3,10 +3,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, PollAnswer, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk3.intro import Sections, get_back_to_types
-from hsk3.reading.service import service
-from .states import QuizStates
+from hsk3.reading.service import get_reading_service
+from .states import HSK3QuizStates
+import asyncio
 
 router = Router()
+service = asyncio.run(get_reading_service())
 
 # Текстовые константы
 TEXT_CHOOSE_VARIANT = "Выберите вариант для прохождения:"
@@ -27,7 +29,7 @@ CALLBACK_READING_VARIANT = "reading_variant"
 @router.callback_query(F.data == Sections.reading)
 async def show_reading_variants(callback: CallbackQuery):
     """Показывает доступные варианты reading заданий"""
-    variants = service.get_reading_variants()
+    variants = await service.get_reading_variants()
     if not variants:
         await callback.message.answer("Извините, варианты заданий временно недоступны.")
         await callback.answer()
@@ -58,7 +60,7 @@ async def show_reading_variants(callback: CallbackQuery):
 async def start_reading_variant(callback: CallbackQuery, state: FSMContext):
     """Начинает прохождение выбранного варианта"""
     variant_id = int(callback.data.split("_")[-1])
-    variant = service.get_reading_variant(variant_id)
+    variant = await service.get_reading_variant(variant_id)
 
     if not variant:
         await callback.message.answer("Вариант не найден.")
@@ -80,7 +82,7 @@ async def start_reading_variant(callback: CallbackQuery, state: FSMContext):
 # --- Первая часть (Задания типа 1) ---
 async def start_part_1(callback: CallbackQuery, state: FSMContext, variant_id: int):
     """Запускает первую часть - задания типа 1"""
-    first_tasks = service.get_first_tasks_by_variant(variant_id)
+    first_tasks = await service.get_first_tasks_by_variant(variant_id)
 
     if not first_tasks:
         await callback.message.answer("Задания первой части не найдены.")
@@ -168,7 +170,7 @@ async def send_next_first_question(bot: Bot, chat_id: int, state: FSMContext):
             correct_option_id=ord(question.correct_letter) - ord('A'),
             is_anonymous=False
         )
-        await state.set_state(QuizStates.WAITING_FOR_ANSWER)
+        await state.set_state(HSK3QuizStates.WAITING_FOR_ANSWER)
     else:
         # Все вопросы текущего задания завершены
         await state.update_data(current_task_index=data["current_task_index"] + 1)
@@ -180,7 +182,7 @@ async def start_part_2_direct(bot: Bot, chat_id: int, state: FSMContext):
     """Запускает вторую часть напрямую"""
     data = await state.get_data()
     variant_id = data["variant_id"]
-    second_tasks = service.get_second_tasks_by_variant(variant_id)
+    second_tasks = await service.get_second_tasks_by_variant(variant_id)
 
     if not second_tasks:
         await bot.send_message(chat_id, "Задания второй части не найдены.")
@@ -266,7 +268,7 @@ async def send_next_second_question(bot: Bot, chat_id: int, state: FSMContext):
             correct_option_id=ord(question.correct_letter) - ord('A'),
             is_anonymous=False
         )
-        await state.set_state(QuizStates.WAITING_FOR_ANSWER)
+        await state.set_state(HSK3QuizStates.WAITING_FOR_ANSWER)
     else:
         # Все вопросы текущего задания завершены, переходим к следующему заданию
         await state.update_data(current_task_index=data["current_task_index"] + 1)
@@ -278,7 +280,7 @@ async def start_part_3_direct(bot: Bot, chat_id: int, state: FSMContext):
     """Запускает третью часть напрямую"""
     data = await state.get_data()
     variant_id = data["variant_id"]
-    third_tasks = service.get_third_tasks_by_variant(variant_id)
+    third_tasks = await service.get_third_tasks_by_variant(variant_id)
 
     if not third_tasks:
         await bot.send_message(chat_id, "Задания третьей части не найдены.")
@@ -332,7 +334,7 @@ async def send_next_third_task(bot: Bot, chat_id: int, state: FSMContext):
         )
 
         await state.update_data(current_task_index=current_task_index + 1)
-        await state.set_state(QuizStates.WAITING_FOR_ANSWER)
+        await state.set_state(HSK3QuizStates.WAITING_FOR_ANSWER)
     else:
         # Все задания типа 3 завершены
         part_score = data["part_score"]
@@ -358,7 +360,7 @@ async def send_next_third_task(bot: Bot, chat_id: int, state: FSMContext):
 
 
 # Общий обработчик ответов на все типы заданий
-@router.poll_answer(QuizStates.WAITING_FOR_ANSWER)
+@router.poll_answer(HSK3QuizStates.WAITING_FOR_ANSWER)
 async def handle_reading_poll_answer(poll_answer: PollAnswer, state: FSMContext):
     """Обработчик ответов на все типы заданий чтения"""
     data = await state.get_data()

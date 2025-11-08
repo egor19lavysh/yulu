@@ -1,9 +1,9 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class FirstTaskStates(StatesGroup):
+class HSK3FirstTaskStates(StatesGroup):
     sentence = State()
 
 
-class SecondTaskStates(StatesGroup):
+class HSK3SecondTaskStates(StatesGroup):
     char = State()

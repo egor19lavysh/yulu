@@ -3,10 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk4.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_listening_service
 from .states import ListeningThirdStates, ListeningSecondStates
+import asyncio
+
 
 router = Router()
+service = asyncio.run(get_listening_service())
 
 ### Callback значения
 CALLBACK_LISTENING_VARIANT = "hsk4_listening_variant"
@@ -34,7 +37,7 @@ ANSWER_FALSE = "❌ Неверно!"
 
 @router.callback_query(F.data == Sections.listening)
 async def show_listening_variants(callback: CallbackQuery):
-    variants = service.get_listening_variants()
+    variants = await service.get_listening_variants()
     builder = InlineKeyboardBuilder()
     for num, variant in enumerate(variants, start=1):
         builder.add(
@@ -65,7 +68,7 @@ async def start_listening(callback: CallbackQuery, state: FSMContext):
 async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     var_id = data["variant_id"]
-    variant = service.get_listening_variant(variant_id=var_id)
+    variant = await service.get_listening_variant(variant_id=var_id)
 
     if not variant:
         await callback.message.answer("Вариант не найден.")
@@ -86,7 +89,7 @@ async def start_listening_variant(callback: CallbackQuery, state: FSMContext):
 
 async def start_part_1(callback: CallbackQuery, state: FSMContext):
     variant_id = int((await state.get_data())["variant_id"])
-    if first_tasks := service.get_first_tasks_by_variant(variant_id=variant_id):
+    if first_tasks := await service.get_first_tasks_by_variant(variant_id=variant_id):
         await state.update_data(
             first_tasks=first_tasks,
             index=0,
@@ -176,7 +179,7 @@ async def handle_first_answer(callback: CallbackQuery, state: FSMContext):
 
 async def start_part_2(callback: CallbackQuery, state: FSMContext):
     variant_id = int((await state.get_data())["variant_id"])
-    if second_tasks := service.get_second_tasks_by_variant(variant_id=variant_id):
+    if second_tasks := await service.get_second_tasks_by_variant(variant_id=variant_id):
         await state.update_data(
             second_tasks=second_tasks,
             index=0,
@@ -260,7 +263,7 @@ async def start_part_3(callback: CallbackQuery = None, state: FSMContext = None,
         chat_id = callback.message.chat.id
 
     variant_id = int((await state.get_data())["variant_id"])
-    if third_tasks := service.get_third_tasks_by_variant(variant_id=variant_id):
+    if third_tasks := await service.get_third_tasks_by_variant(variant_id=variant_id):
         await state.update_data(
             third_tasks=third_tasks,
             index=0,

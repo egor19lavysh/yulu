@@ -3,10 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk4.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_writing_service
 from .states import *
+import asyncio
+
 
 router = Router()
+service = asyncio.run(get_writing_service())
 
 ### Callback значения
 CALLBACK_WRITING_VARIANT = "hsk4_writing_variant"
@@ -32,7 +35,7 @@ TEXT_ALL_PARTS_COMPLETED = "Все части пройдены! 🎉"
 
 @router.callback_query(F.data == Sections.writing)
 async def show_writing_variants(callback: CallbackQuery):
-    variants = service.get_writing_variants()
+    variants = await service.get_writing_variants()
     builder = InlineKeyboardBuilder()
     for num, variant in enumerate(variants, start=1):
         builder.add(
@@ -77,7 +80,7 @@ async def start_writing_variant(callback: CallbackQuery, state: FSMContext):
 
 async def start_part_1(callback: CallbackQuery, state: FSMContext):
     variant_id = (await state.get_data())["variant_id"]
-    if first_tasks := service.get_first_tasks_by_variant(var_id=variant_id):
+    if first_tasks := await service.get_first_tasks_by_variant(var_id=variant_id):
         await state.update_data(
             first_tasks=first_tasks,
             index=0,
@@ -106,7 +109,7 @@ async def handle_first_tasks(bot: Bot, state: FSMContext):
         curr_task = tasks[index]
         await bot.send_message(chat_id=chat_id,
                                text=f"{index + 1}/{10}. Иероглифы: <b>{curr_task.words}</b>" + TASK_FIRST_WARNING)
-        await state.set_state(FirstTask.answer)
+        await state.set_state(HSK4WritingFirstTask.answer)
     else:
         total_score += score
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=10))
@@ -118,7 +121,7 @@ async def handle_first_tasks(bot: Bot, state: FSMContext):
         await start_part_2(bot=bot, state=state)
 
 
-@router.message(FirstTask.answer)
+@router.message(HSK4WritingFirstTask.answer)
 async def handle_first_answer(msg: Message, state: FSMContext):
     data = await state.get_data()
     tasks = data["first_tasks"]
@@ -139,7 +142,7 @@ async def handle_first_answer(msg: Message, state: FSMContext):
             await msg.reply(f"Неправильно!\nПравильно будет так: <b>{curr_task.correct_sentence}</b>")
     else:
         await msg.reply("Ответьте текстом!")
-        await state.set_state(FirstTask.answer)
+        await state.set_state(HSK4WritingFirstTask.answer)
         return
 
     await state.update_data(index=index + 1)
@@ -152,7 +155,7 @@ async def start_part_2(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if second_task := service.get_second_task_by_variant(var_id=variant_id):
+    if second_task := await service.get_second_task_by_variant(var_id=variant_id):
         await state.update_data(
             second_task_words=second_task.words,
             index=0,
@@ -179,14 +182,14 @@ async def handle_second_task(bot: Bot, state: FSMContext):
     if index < len(words):
         word = words[index]
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_2_SAMPLE.format(picture_num=96 + index, word=word.text))
-        await state.set_state(SecondTask.answer)
+        await state.set_state(HSK4WritingSecondTask.answer)
     else:
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=5))
 
         await finish_writing(bot=bot, state=state)
 
 
-@router.message(SecondTask.answer)
+@router.message(HSK4WritingSecondTask.answer)
 async def handle_second_answer(msg: Message, state: FSMContext):
     data = await state.get_data()
     words = data["second_task_words"]
@@ -203,7 +206,7 @@ async def handle_second_answer(msg: Message, state: FSMContext):
 
     else:
         await msg.reply("Ответьте текстом!")
-        await state.set_state(SecondTask.answer)
+        await state.set_state(HSK4WritingSecondTask.answer)
         return
 
 

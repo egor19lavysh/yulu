@@ -13,6 +13,7 @@ sqlalchemy = "^2.0.41"
 alembic = "^1.16.2"
 psycopg2 = "^2.9.10"
 aiohttp-socks = "^0.10.1"
+asyncpg = "^0.30.0"
 
 
 [build-system]

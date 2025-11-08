@@ -1,13 +1,16 @@
 from aiogram import F, Router, Bot
 from aiogram.types import CallbackQuery, InlineKeyboardButton, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from .service import service
+from .service import get_writing_service
 from .schemas import *
 from .states import *
 from aiogram.fsm.context import FSMContext
 from hsk3.intro import Sections, get_back_to_types
+import asyncio
+
 
 router = Router()
+service = asyncio.run(get_writing_service())
 
 # CALLBACK КОНСТАНТЫ
 CALLBACK_WRITING_VARIANT = "writing_variant"
@@ -26,7 +29,7 @@ WRONG_ANSWER = "Это неправильно. Правильно будет: <b
 
 @router.callback_query(F.data == Sections.writing)
 async def show_writing_variants(callback: CallbackQuery):
-    variants = service.get_variants()
+    variants = await service.get_variants()
     if not variants:
         await callback.message.answer("Извините, варианты заданий временно недоступны.")
         await callback.answer()
@@ -56,7 +59,7 @@ async def show_writing_variants(callback: CallbackQuery):
 @router.callback_query(F.data.startswith(CALLBACK_WRITING_VARIANT))
 async def start_variant(callback: CallbackQuery, state: FSMContext):
     var_id = int(callback.data.split("_")[-1])
-    var = service.get_variant_by_id(variant_id=var_id)
+    var = await service.get_variant_by_id(variant_id=var_id)
 
     # Сохраняем все данные варианта в state
     await state.update_data(
@@ -114,14 +117,14 @@ async def send_next_task(bot: Bot, chat_id: int, state: FSMContext, is_first=Tru
                 total=len(tasks),
                 chars=curr_task.chars
             ))
-            await state.set_state(FirstTaskStates.sentence)
+            await state.set_state(HSK3FirstTaskStates.sentence)
         else:
             await bot.send_message(chat_id=chat_id, text=TEXT_SECOND_TASK_SAMPLE.format(
                 index=index + 1,
                 total=len(tasks),
                 text=curr_task.text
             ))
-            await state.set_state(SecondTaskStates.char)
+            await state.set_state(HSK3SecondTaskStates.char)
     else:
         # Задания текущей части завершены
         data = await state.get_data()
@@ -157,7 +160,7 @@ async def send_next_task(bot: Bot, chat_id: int, state: FSMContext, is_first=Tru
                 await get_back_to_types(bot, chat_id, Sections.writing)
 
 
-@router.message(FirstTaskStates.sentence)
+@router.message(HSK3FirstTaskStates.sentence)
 async def handle_next_first_task(msg: Message, state: FSMContext):
     data = await state.get_data()
     index = data['index']
@@ -182,7 +185,7 @@ async def handle_next_first_task(msg: Message, state: FSMContext):
     await send_next_task(msg.bot, msg.chat.id, state, is_first=True)
 
 
-@router.message(SecondTaskStates.char)
+@router.message(HSK3SecondTaskStates.char)
 async def handle_next_second_task(msg: Message, state: FSMContext):
     data = await state.get_data()
     index = data['index']

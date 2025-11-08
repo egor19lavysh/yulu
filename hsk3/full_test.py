@@ -5,16 +5,22 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk3.intro import Sections, get_back_to_types
 
 # Импорты сервисов всех разделов
-from hsk3.listening.service import service as listening_service
-from hsk3.reading.service import service as reading_service
-from hsk3.writing.service import service as writing_service
+from hsk3.listening.service import get_listening_service
+from hsk3.reading.service import get_reading_service
+from hsk3.writing.service import get_writing_service
 
 # Импорты функций для запуска разделов
 from hsk3.listening.handlers import start_listening_variant
 from hsk3.reading.handlers import start_reading_variant
 from hsk3.writing.handlers import start_first_tasks
+import asyncio
 
 router = Router()
+
+listening_service = asyncio.run(get_listening_service())
+reading_service = asyncio.run(get_reading_service())
+writing_service = asyncio.run(get_writing_service())
+
 
 # Константы
 TEXT_CHOOSE_FULL_VARIANT = "Выберите вариант для полного прохождения HSK 3:"
@@ -39,9 +45,9 @@ CALLBACK_FULL_VARIANT = "full_variant"
 async def show_full_variants(callback: CallbackQuery):
     """Показывает варианты для полного прохождения"""
     # Получаем варианты из всех разделов
-    listening_variants = listening_service.get_listening_variants()
-    reading_variants = reading_service.get_reading_variants()
-    writing_variants = writing_service.get_variants()
+    listening_variants = await listening_service.get_listening_variants()
+    reading_variants = await reading_service.get_reading_variants()
+    writing_variants = await writing_service.get_variants()
 
     # Находим минимальное количество вариантов среди всех разделов
     min_variants_count = min(len(listening_variants), len(reading_variants), len(writing_variants))
@@ -78,9 +84,9 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     variant_index = int(callback.data.split("_")[-1])
 
     # Получаем варианты всех разделов
-    listening_variants = listening_service.get_listening_variants()
-    reading_variants = reading_service.get_reading_variants()
-    writing_variants = writing_service.get_writing_variants()
+    listening_variants = await listening_service.get_listening_variants()
+    reading_variants = await reading_service.get_reading_variants()
+    writing_variants = await writing_service.get_variants()
 
     # Получаем конкретные варианты по индексу
     listening_variant = listening_variants[variant_index]
@@ -88,15 +94,15 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     writing_variant_list = writing_variants[variant_index]
 
     # Получаем полные объекты вариантов с задачами
-    listening_full = listening_service.get_listening_variant(listening_variant.id)
-    reading_full = reading_service.get_reading_variant(reading_variant.id)
-    writing_full = writing_service.get_variant_by_id(writing_variant_list.id)
+    listening_full = await listening_service.get_listening_variant(listening_variant.id)
+    reading_full = await reading_service.get_reading_variant(reading_variant.id)
+    writing_full = await writing_service.get_variant_by_id(writing_variant_list.id)
 
     # Подсчитываем общее количество вопросов для каждого раздела
     # Аудирование
-    listening_first_tasks = listening_service.get_first_tasks_by_variant(listening_variant.id)
-    listening_second_tasks = listening_service.get_second_tasks_by_variant(listening_variant.id)
-    listening_third_tasks = listening_service.get_third_tasks_by_variant(listening_variant.id)
+    listening_first_tasks = await listening_service.get_first_tasks_by_variant(listening_variant.id)
+    listening_second_tasks = await listening_service.get_second_tasks_by_variant(listening_variant.id)
+    listening_third_tasks = await listening_service.get_third_tasks_by_variant(listening_variant.id)
 
     listening_total = (
             sum(len(task.questions) for task in listening_first_tasks) +
@@ -105,9 +111,9 @@ async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     )
 
     # Чтение
-    reading_first_tasks = reading_service.get_first_tasks_by_variant(reading_variant.id)
-    reading_second_tasks = reading_service.get_second_tasks_by_variant(reading_variant.id)
-    reading_third_tasks = reading_service.get_third_tasks_by_variant(reading_variant.id)
+    reading_first_tasks = await reading_service.get_first_tasks_by_variant(reading_variant.id)
+    reading_second_tasks = await reading_service.get_second_tasks_by_variant(reading_variant.id)
+    reading_third_tasks = await reading_service.get_third_tasks_by_variant(reading_variant.id)
 
     reading_total = (
             sum(len(task.questions) for task in reading_first_tasks) +
@@ -204,7 +210,7 @@ async def complete_reading_and_start_writing(bot: Bot, chat_id: int, state: FSMC
 
     # Получаем вариант письма и запускаем его
     variant_id = data['variant_ids']['writing']
-    var = writing_service.get_variant_by_id(variant_id=variant_id)
+    var = await writing_service.get_variant_by_id(variant_id=variant_id)
 
     await state.update_data(
         variant=var,

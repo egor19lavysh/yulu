@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from hsk5.reading.repository import ReadingRepository, repository
+from hsk5.reading.repository import ReadingRepository, get_reading_repository
 from hsk5.reading.schemas import *
 from hsk5.reading.models import *
 
@@ -8,12 +8,12 @@ from hsk5.reading.models import *
 class ReadingService:
     repository: ReadingRepository
 
-    def get_reading_variants(self) -> list[ReadingVariantSchema]:
-        variants = [self._to_variant(var) for var in self.repository.get_reading_variants()]
+    async def get_reading_variants(self) -> list[ReadingVariantSchema]:
+        variants = [await self._to_variant(var) for var in await self.repository.get_reading_variants()]
         return variants
 
-    def get_first_tasks_by_variant(self, var_id: int) -> list[FirstTaskSchema]:
-        tasks = self.repository.get_first_tasks_by_variant(variant_id=var_id)
+    async def get_first_tasks_by_variant(self, var_id: int) -> list[FirstTaskSchema]:
+        tasks = await self.repository.get_first_tasks_by_variant(variant_id=var_id)
         orm_tasks = []
         for task in tasks:
             orm_task = FirstTaskSchema(
@@ -30,8 +30,8 @@ class ReadingService:
 
         return orm_tasks
 
-    def get_second_tasks_by_variant(self, var_id: int) -> list[SecondTaskSchema]:
-        tasks = self.repository.get_second_tasks_by_variant(variant_id=var_id)
+    async def get_second_tasks_by_variant(self, var_id: int) -> list[SecondTaskSchema]:
+        tasks = await self.repository.get_second_tasks_by_variant(variant_id=var_id)
         orm_tasks = []
         for task in tasks:
             orm_task = SecondTaskSchema(
@@ -45,8 +45,8 @@ class ReadingService:
 
         return orm_tasks
 
-    def get_third_tasks_by_variant(self, var_id: int) -> list[ThirdTaskSchema]:
-        tasks = self.repository.get_third_tasks_by_variant(variant_id=var_id)
+    async def get_third_tasks_by_variant(self, var_id: int) -> list[ThirdTaskSchema]:
+        tasks = await self.repository.get_third_tasks_by_variant(variant_id=var_id)
         orm_tasks = []
         for task in tasks:
             orm_task = ThirdTaskSchema(
@@ -64,8 +64,10 @@ class ReadingService:
 
         return orm_tasks
 
-    def _to_variant(self, var: ReadingHSK5) -> ReadingVariantSchema:
+    async def _to_variant(self, var: ReadingHSK5) -> ReadingVariantSchema:
         return ReadingVariantSchema.model_validate(var)
 
 
-service = ReadingService(repository=repository)
+async def get_reading_service():
+    repository = await get_reading_repository()
+    return ReadingService(repository=repository)

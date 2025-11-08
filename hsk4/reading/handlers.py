@@ -3,10 +3,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk4.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_reading_service
 from .states import *
+import asyncio
+
 
 router = Router()
+service = asyncio.run(get_reading_service())
+
 
 ### Callback значения
 CALLBACK_READING_VARIANT = "hsk4_reading_variant"
@@ -29,7 +33,7 @@ TEXT_ALL_PARTS_COMPLETED = "Все части пройдены! 🎉"
 
 @router.callback_query(F.data == Sections.reading)
 async def show_reading_variants(callback: CallbackQuery):
-    variants = service.get_reading_variants()
+    variants = await service.get_reading_variants()
     builder = InlineKeyboardBuilder()
     for num, variant in enumerate(variants, start=1):
         builder.add(
@@ -78,7 +82,7 @@ async def start_reading_variant(callback: CallbackQuery, state: FSMContext):
 
 async def start_part_1(callback: CallbackQuery, state: FSMContext):
     variant_id = (await state.get_data())["variant_id"]
-    if first_tasks := service.get_first_tasks_by_variant(var_id=variant_id):
+    if first_tasks := await service.get_first_tasks_by_variant(var_id=variant_id):
         await state.update_data(
             first_tasks=first_tasks,
             index=0,
@@ -152,7 +156,7 @@ async def handle_first_task(state: FSMContext, bot: Bot):
             question="Выберите вариант ответа"
         )
 
-        await state.set_state(ReadingFirstTask.answer)
+        await state.set_state(HSK4ReadingFirstTask.answer)
     else:
         await state.update_data(
             index=index + 1
@@ -160,7 +164,7 @@ async def handle_first_task(state: FSMContext, bot: Bot):
         await handle_first_tasks(bot=bot, state=state)
 
 
-@router.poll_answer(ReadingFirstTask.answer)
+@router.poll_answer(HSK4ReadingFirstTask.answer)
 async def handle_first_answer(poll_answer: PollAnswer, state: FSMContext):
     data = await state.get_data()
     sentences = data["sentences"]
@@ -184,7 +188,7 @@ async def start_part_2(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if second_tasks := service.get_second_tasks_by_variant(var_id=variant_id):
+    if second_tasks := await service.get_second_tasks_by_variant(var_id=variant_id):
         await state.update_data(
             second_tasks=second_tasks,
             index=0,
@@ -215,7 +219,7 @@ async def handle_second_tasks(bot: Bot, state: FSMContext):
             task_text += f"{option.letter} {option.text}\n"
 
         await bot.send_message(chat_id=chat_id, text=task_text)
-        await state.set_state(ReadingSecondTask.answer)
+        await state.set_state(HSK4ReadingSecondTask.answer)
     else:
         total_score += score
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=10))
@@ -228,7 +232,7 @@ async def handle_second_tasks(bot: Bot, state: FSMContext):
         await start_part_3(bot=bot, state=state)
 
 
-@router.message(ReadingSecondTask.answer)
+@router.message(HSK4ReadingSecondTask.answer)
 async def handle_second_answer(msg: Message, state: FSMContext):
     data = await state.get_data()
     index = data["index"]
@@ -244,7 +248,7 @@ async def handle_second_answer(msg: Message, state: FSMContext):
             await msg.reply(f"Неправильно!\nПравильно будет так: <b>{answer}</b>")
     else:
         await msg.reply("Ответьте текстом!")
-        await state.set_state(ReadingSecondTask.answer)
+        await state.set_state(HSK4ReadingSecondTask.answer)
         return
 
     await state.update_data(index=index + 1)
@@ -257,7 +261,7 @@ async def start_part_3(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if third_tasks := service.get_third_tasks_by_variant(var_id=variant_id):
+    if third_tasks := await service.get_third_tasks_by_variant(var_id=variant_id):
         await state.update_data(
             third_tasks=third_tasks,
             index=0,
@@ -324,7 +328,7 @@ async def handle_third_task(bot: Bot, state: FSMContext):
                             question=f"{third_task_index + 1}/{len(questions)}",
                             correct_option_id=correct_id
                             )
-        await state.set_state(ReadingThirdTask.answer)
+        await state.set_state(HSK4ReadingThirdTask.answer)
     else:
         await state.update_data(
             index=index + 1
@@ -332,7 +336,7 @@ async def handle_third_task(bot: Bot, state: FSMContext):
         await handle_third_tasks(bot, state)
 
 
-@router.poll_answer(ReadingThirdTask.answer)
+@router.poll_answer(HSK4ReadingThirdTask.answer)
 async def handle_third_answer(poll_answer: PollAnswer, state: FSMContext):
     data = await state.get_data()
     score = data["score"]

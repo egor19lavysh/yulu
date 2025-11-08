@@ -3,10 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk5.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_writing_service
 from .states import *
+import asyncio
+
 
 router = Router()
+service = asyncio.run(get_writing_service())
 
 ### Callback значения
 CALLBACK_WRITING_VARIANT = "hsk5_writing_variant"
@@ -30,7 +33,7 @@ TEXT_ALL_PARTS_COMPLETED = "Все части пройдены! 🎉"
 
 @router.callback_query(F.data == Sections.writing)
 async def show_writing_variants(callback: CallbackQuery):
-    variants = service.get_writing_variants()
+    variants = await service.get_writing_variants()
     builder = InlineKeyboardBuilder()
     for num, variant in enumerate(variants, start=1):
         builder.add(
@@ -86,7 +89,7 @@ async def start_part_1(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if first_tasks := service.get_first_tasks_by_variant(var_id=variant_id):
+    if first_tasks := await service.get_first_tasks_by_variant(var_id=variant_id):
         await state.update_data(
             first_tasks=first_tasks,
             index=0,
@@ -159,7 +162,7 @@ async def start_part_2(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_second_tasks_by_variant(var_id=variant_id):
+    if tasks := await service.get_second_tasks_by_variant(var_id=variant_id):
         task = tasks[0]
 
         await bot.send_message(chat_id, TEXT_TASK_2)
@@ -189,7 +192,7 @@ async def start_part_3(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_third_tasks_by_variant(var_id=variant_id):
+    if tasks := await service.get_third_tasks_by_variant(var_id=variant_id):
         task = tasks[0]
 
         await bot.send_message(chat_id, TEXT_TASK_3)

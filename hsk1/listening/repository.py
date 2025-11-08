@@ -1,72 +1,80 @@
 from dataclasses import dataclass
-from sqlalchemy.orm import Session, selectinload
-from hsk1.listening.models import *
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy import select
-from database import get_db_session
+from hsk1.listening.models import *
+from database import get_db_session_async
 
 
 @dataclass
-class ListeningRepository:
-    db_session: Session
+class AsyncListeningRepository:
+    db_session: AsyncSession
 
-    def get_listening_variants(self):
+    async def get_listening_variants(self):
         """Получает все доступные варианты listening заданий"""
-        with self.db_session as session:
-            variants = session.execute(select(ListeningHSK1)).scalars().all()
-            return variants
+        result = await self.db_session.execute(select(ListeningHSK1))
+        variants = result.scalars().all()
+        return variants
 
-    def get_listening_variant(self, variant_id: int) -> ListeningHSK1:
+    async def get_listening_variant(self, variant_id: int) -> ListeningHSK1:
         """Получает конкретный вариант по ID"""
-        with self.db_session as session:
-            variant = session.execute(
-                select(ListeningHSK1).where(ListeningHSK1.id == variant_id)
-            ).scalars().first()
-            return variant
+        result = await self.db_session.execute(
+            select(ListeningHSK1).where(ListeningHSK1.id == variant_id)
+        )
+        variant = result.scalars().first()
+        return variant
 
-    def get_first_tasks_by_variant(self, variant_id: int):
+    async def get_first_tasks_by_variant(self, variant_id: int):
         """Получает задания первого типа для варианта"""
-        with self.db_session as session:
-            tasks = session.execute(
-                select(FirstTaskHSK1)
-                .options(selectinload(FirstTaskHSK1.questions))
-                .where(FirstTaskHSK1.listening_var_id == variant_id)
-            ).scalars().all()
-            return tasks
+        result = await self.db_session.execute(
+            select(FirstTaskHSK1)
+            .options(selectinload(FirstTaskHSK1.questions))
+            .where(FirstTaskHSK1.listening_var_id == variant_id)
+        )
+        tasks = result.scalars().all()
+        return tasks
 
-    def get_second_tasks_by_variant(self, variant_id: int):
+    async def get_second_tasks_by_variant(self, variant_id: int):
         """Получает задания второго типа для варианта"""
-        with self.db_session as session:
-            tasks = session.execute(
-                select(SecondTaskHSK1)
-                .options(selectinload(SecondTaskHSK1.questions))
-                .where(SecondTaskHSK1.listening_var_id == variant_id)
-            ).scalars().all()
-            return tasks
+        result = await self.db_session.execute(
+            select(SecondTaskHSK1)
+            .options(selectinload(SecondTaskHSK1.questions))
+            .where(SecondTaskHSK1.listening_var_id == variant_id)
+        )
+        tasks = result.scalars().all()
+        return tasks
     
-    def get_third_tasks_by_variant(self, variant_id: int):
+    async def get_third_tasks_by_variant(self, variant_id: int):
         """Получает задания третьего типа для варианта"""
-        with self.db_session as session:
-            tasks = session.execute(
-                select(ThirdTaskHSK1)
-                .options(selectinload(ThirdTaskHSK1.questions))
-                .where(ThirdTaskHSK1.listening_var_id == variant_id)
-            ).scalars().all()
-            return tasks
+        result = await self.db_session.execute(
+            select(ThirdTaskHSK1)
+            .options(selectinload(ThirdTaskHSK1.questions))
+            .where(ThirdTaskHSK1.listening_var_id == variant_id)
+        )
+        tasks = result.scalars().all()
+        return tasks
     
-    def get_fourth_tasks_by_variant(self, variant_id: int):
+    async def get_fourth_tasks_by_variant(self, variant_id: int):
         """Получает задания четвертого типа для варианта со всеми связанными данными"""
-        with self.db_session as session:
-            # Загружаем FourthTaskHSK1 вместе с вопросами и опциями
-            tasks = session.execute(
-                select(FourthTaskHSK1)
-                .options(
-                    selectinload(FourthTaskHSK1.questions)
-                        .selectinload(FourthTaskHSK1Question.options)  # Загружаем опции для каждого вопроса
-                )
-                .where(FourthTaskHSK1.listening_var_id == variant_id)
-            ).scalars().all()
-            return tasks
-    
+        result = await self.db_session.execute(
+            select(FourthTaskHSK1)
+            .options(
+                selectinload(FourthTaskHSK1.questions)
+                    .selectinload(FourthTaskHSK1Question.options)
+            )
+            .where(FourthTaskHSK1.listening_var_id == variant_id)
+        )
+        tasks = result.scalars().all()
+        return tasks
 
-session = next(get_db_session())
-repository = ListeningRepository(session)
+    async def close(self):
+        """Закрывает сессию (если нужно управлять вручную)"""
+        await self.db_session.close()
+
+
+# Асинхронный контекстный менеджер для работы с репозиторием
+async def get_listening_repository() -> AsyncListeningRepository:
+    """Фабрика для получения асинхронного репозитория"""
+    async for session in get_db_session_async():
+        return AsyncListeningRepository(session)
+

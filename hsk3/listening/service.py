@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional
-
 from .repository import *
 from hsk3.listening.schemas import *
 
@@ -10,25 +9,25 @@ class ListeningService:
     repo: ListeningRepository
 
     # Новые методы для единой механики
-    def get_listening_variants(self) -> list[ListeningSchema]:
+    async def get_listening_variants(self) -> list[ListeningSchema]:
         """Получает все доступные варианты listening заданий"""
-        variants = self.repo.get_listening_variants()
+        variants = await self.repo.get_listening_variants()
         if not variants:
             return []
 
         return [ListeningSchema.model_validate(variant, from_attributes=True) for variant in variants]
 
-    def get_listening_variant(self, variant_id: int) -> Optional[ListeningSchema]:
+    async def get_listening_variant(self, variant_id: int) -> Optional[ListeningSchema]:
         """Получает конкретный вариант по ID"""
-        variant = self.repo.get_listening_variant(variant_id)
+        variant = await self.repo.get_listening_variant(variant_id)
         if not variant:
             return None
 
         return ListeningSchema.model_validate(variant, from_attributes=True)
 
-    def get_first_tasks_by_variant(self, variant_id: int) -> list[FirstTaskSchema]:
+    async def get_first_tasks_by_variant(self, variant_id: int) -> list[FirstTaskSchema]:
         """Получает задания первого типа для варианта"""
-        tasks = self.repo.get_first_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_first_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
@@ -45,9 +44,9 @@ class ListeningService:
             orm_tasks.append(orm_task)
         return orm_tasks
 
-    def get_first_task_by_variant(self, variant_id: int) -> Optional[FirstTaskSchema]:
+    async def get_first_task_by_variant(self, variant_id: int) -> Optional[FirstTaskSchema]:
         """Получает первое задание первого типа для варианта"""
-        task = self.repo.get_first_task_by_variant(variant_id)
+        task = await self.repo.get_first_task_by_variant(variant_id)
         if not task:
             return None
 
@@ -60,17 +59,17 @@ class ListeningService:
             ]
         )
 
-    def get_second_tasks_by_variant(self, variant_id: int) -> list[SecondTaskSchema]:
+    async def get_second_tasks_by_variant(self, variant_id: int) -> list[SecondTaskSchema]:
         """Получает задания второго типа для варианта"""
-        tasks = self.repo.get_second_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_second_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
         return [SecondTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
 
-    def get_third_tasks_by_variant(self, variant_id: int) -> list[ThirdTaskSchema]:
+    async def get_third_tasks_by_variant(self, variant_id: int) -> list[ThirdTaskSchema]:
         """Получает задания третьего типа для варианта со всеми связанными данными"""
-        tasks = self.repo.get_third_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_third_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
@@ -98,4 +97,6 @@ class ListeningService:
 
         return orm_tasks
 
-service = ListeningService(repository)
+async def get_listening_service():
+    repository = await get_listening_repository()
+    return ListeningService(repo=repository)

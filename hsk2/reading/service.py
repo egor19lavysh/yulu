@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List
-from .repository import ReadingRepository, repository
+from .repository import ReadingRepository, get_reading_repository
 from hsk2.reading.schemas import *
 from .schemas import *
 
@@ -9,25 +9,25 @@ from .schemas import *
 class ReadingService:
     repo: ReadingRepository
 
-    def get_reading_variants(self) -> List[ReadingVariantSchema]:
+    async def get_reading_variants(self) -> List[ReadingVariantSchema]:
         """Получает все доступные варианты listening заданий"""
-        variants = self.repo.get_reading_variants()
+        variants = await self.repo.get_reading_variants()
         if not variants:
             return []
 
         return [ReadingVariantSchema.model_validate(variant, from_attributes=True) for variant in variants]
     
-    def get_reading_variant(self, variant_id: int) -> Optional[ReadingVariantSchema]:
+    async def get_reading_variant(self, variant_id: int) -> Optional[ReadingVariantSchema]:
         """Получает конкретный вариант по ID"""
-        variant = self.repo.get_reading_variant(variant_id)
+        variant = await self.repo.get_reading_variant(variant_id)
         if not variant:
             return None
 
         return ReadingVariantSchema.model_validate(variant, from_attributes=True)
 
-    def get_first_tasks_by_variant(self, variant_id: int) -> List[FirstTaskSchema]:
+    async def get_first_tasks_by_variant(self, variant_id: int) -> List[FirstTaskSchema]:
         """Получает задания первого типа для варианта"""
-        tasks = self.repo.get_first_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_first_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
@@ -45,9 +45,9 @@ class ReadingService:
 
         return orm_tasks
     
-    def get_second_tasks_by_variant(self, variant_id: int) -> List[SecondTaskSchema]:
+    async def get_second_tasks_by_variant(self, variant_id: int) -> List[SecondTaskSchema]:
         """Получает задания второго типа для варианта"""
-        tasks = self.repo.get_second_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_second_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
@@ -67,17 +67,17 @@ class ReadingService:
 
         return orm_tasks
     
-    def get_third_tasks_by_variant(self, variant_id: int) -> List[ThirdTaskSchema]:
+    async def get_third_tasks_by_variant(self, variant_id: int) -> List[ThirdTaskSchema]:
         """Получает задания третьего типа для варианта"""
-        tasks = self.repo.get_third_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_third_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
         return [ThirdTaskSchema.model_validate(task, from_attributes=True) for task in tasks]
     
-    def get_fourth_tasks_by_variant(self, variant_id: int) -> List[FourthTaskSchema]:
+    async def get_fourth_tasks_by_variant(self, variant_id: int) -> List[FourthTaskSchema]:
         """Получает задания третьего типа для варианта"""
-        tasks = self.repo.get_fourth_tasks_by_variant(variant_id)
+        tasks = await self.repo.get_fourth_tasks_by_variant(variant_id)
         if not tasks:
             return []
 
@@ -98,4 +98,6 @@ class ReadingService:
         return orm_tasks
 
 
-service = ReadingService(repo=repository)
+async def get_reading_service():
+    repository = await get_reading_repository()
+    return ReadingService(repository)

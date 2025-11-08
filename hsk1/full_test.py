@@ -3,11 +3,16 @@ from .intro import Sections, get_back_to_types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from hsk1.listening.service import service as listening_service
-from hsk1.reading.service import service as reading_service
+from hsk1.listening.service import get_listening_service
+from hsk1.reading.service import get_reading_service
+import asyncio
 
 
 router = Router()
+
+listening_service = asyncio.run(get_listening_service())
+reading_service = asyncio.run(get_reading_service())
+
 
 ###
 CALLBACK_FULL_VARIANT = "hsk1_full"
@@ -19,8 +24,8 @@ TEXT_MOVING_TO_READING = "Переходим к части \"Чтение\" 📖
 
 @router.callback_query(F.data == Sections.full_test)
 async def show_all_variants(callback: CallbackQuery):
-    listening_vars = len(listening_service.get_listening_variants())
-    reading_vars = len(reading_service.get_reading_variants())
+    listening_vars = len(await listening_service.get_listening_variants())
+    reading_vars = len(await reading_service.get_reading_variants())
 
     min_vars_count = min(listening_vars, reading_vars)
 
@@ -49,8 +54,8 @@ async def show_all_variants(callback: CallbackQuery):
 async def start_full_variant(callback: CallbackQuery, state: FSMContext):
     variant_index = int(callback.data.split("_")[-1]) - 1
 
-    listening_var_id = listening_service.get_listening_variants()[variant_index].id
-    reading_var_id = reading_service.get_reading_variants()[variant_index].id
+    listening_var_id = (await listening_service.get_listening_variants())[variant_index].id
+    reading_var_id = (await reading_service.get_reading_variants())[variant_index].id
 
     await state.update_data(
         listening_variant_id=listening_var_id,

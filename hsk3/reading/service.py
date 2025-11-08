@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from .repository import ReadingRepository, repository
+from .repository import ReadingRepository, get_reading_repository
 from .schemas import *
 from .models import *
 
@@ -8,26 +8,26 @@ from .models import *
 class ReadingService:
     repo: ReadingRepository
 
-    def get_reading_variants(self) -> list[ReadingVariantSchema]:
-        db_variants = self.repo.get_reading_variants()
-        variants = [self._db_variant_to_schema(var) for var in db_variants]
+    async def get_reading_variants(self) -> list[ReadingVariantSchema]:
+        db_variants = await self.repo.get_reading_variants()
+        variants = [await self._db_variant_to_schema(var) for var in db_variants]
         return variants
 
-    def get_reading_variant(self, variant_id: int) -> ReadingVariantSchema | None:
+    async def get_reading_variant(self, variant_id: int) -> ReadingVariantSchema | None:
         """Получает и сериализует полный вариант Reading."""
-        db_variant = self.repo.get_reading_variant(variant_id)
+        db_variant = await self.repo.get_reading_variant(variant_id)
         if not db_variant:
             return None
         return self._db_variant_to_schema(db_variant)
 
-    def get_random_reading_variant(self) -> ReadingVariantSchema | None:
+    async def get_random_reading_variant(self) -> ReadingVariantSchema | None:
         """Получает и сериализует случайный вариант Reading."""
-        db_variant = self.repo.get_random_reading_variant_with_tasks()
+        db_variant = await self.repo.get_random_reading_variant_with_tasks()
         if not db_variant:
             return None
         return self._db_variant_to_schema(db_variant)
 
-    def _db_variant_to_schema(self, db_variant: Reading) -> ReadingVariantSchema:
+    async def _db_variant_to_schema(self, db_variant: Reading) -> ReadingVariantSchema:
         """Преобразует объект SQLAlchemy в Pydantic схему."""
         first_tasks_schemas = [
             FirstTaskSchema(
@@ -64,9 +64,9 @@ class ReadingService:
             third_tasks=third_tasks_schemas
         )
 
-    def get_first_tasks_by_variant(self, variant_id: int) -> list[FirstTaskSchema]:
+    async def get_first_tasks_by_variant(self, variant_id: int) -> list[FirstTaskSchema]:
         """Получает и сериализует задания типа 1 для варианта"""
-        db_tasks = self.repo.get_first_tasks_by_variant(variant_id)
+        db_tasks = await self.repo.get_first_tasks_by_variant(variant_id)
         return [
             FirstTaskSchema(
                 id=task.id,
@@ -76,9 +76,9 @@ class ReadingService:
             for task in db_tasks
         ]
 
-    def get_second_tasks_by_variant(self, variant_id: int) -> list[SecondTaskSchema]:
+    async def get_second_tasks_by_variant(self, variant_id: int) -> list[SecondTaskSchema]:
         """Получает и сериализует задания типа 2 для варианта"""
-        db_tasks = self.repo.get_second_tasks_by_variant(variant_id)
+        db_tasks = await self.repo.get_second_tasks_by_variant(variant_id)
         return [
             SecondTaskSchema(
                 id=task.id,
@@ -88,9 +88,9 @@ class ReadingService:
             for task in db_tasks
         ]
 
-    def get_third_tasks_by_variant(self, variant_id: int) -> list[ThirdTaskSchema]:
+    async def get_third_tasks_by_variant(self, variant_id: int) -> list[ThirdTaskSchema]:
         """Получает и сериализует задания типа 3 для варианта"""
-        db_tasks = self.repo.get_third_tasks_by_variant(variant_id)
+        db_tasks = await self.repo.get_third_tasks_by_variant(variant_id)
         return [
             ThirdTaskSchema(
                 id=task.id,
@@ -102,4 +102,6 @@ class ReadingService:
         ]
 
 
-service = ReadingService(repository)
+async def get_reading_service():
+    repository = await get_reading_repository()
+    return ReadingService(repository)

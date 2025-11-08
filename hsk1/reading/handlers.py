@@ -3,11 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, PollAnswer
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from hsk1.intro import Sections, get_back_to_types
-from .service import service
+from .service import get_reading_service
 from .states import *
+import asyncio
 
 
 router = Router()
+service = asyncio.run(get_reading_service())
 
 ### Callback значения
 CALLBACK_READING_VARIANT = "hsk1_reading_variant"
@@ -39,7 +41,7 @@ TEXT_NO_VARIANTS = "Нет вариантов"
 
 @router.callback_query(F.data == Sections.reading)
 async def show_reading_variants(callback: CallbackQuery):
-    if variants := service.get_reading_variants():
+    if variants := await service.get_reading_variants():
         builder = InlineKeyboardBuilder()
         for num, variant in enumerate(variants, start=1):
             builder.add(
@@ -106,7 +108,7 @@ async def start_part_1(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_first_tasks_by_variant(variant_id=variant_id):
+    if tasks := await service.get_first_tasks_by_variant(variant_id=variant_id):
         task = tasks[0]
 
         await bot.send_message(chat_id, TEXT_TASK_1)
@@ -150,7 +152,7 @@ async def handle_first_task(bot: Bot, state: FSMContext):
             reply_markup=builder.as_markup()
         )
 
-        await state.set_state(ReadingFirstTask.answer)
+        await state.set_state(HSK1ReadingFirstTask.answer)
 
     else:
         await state.update_data(
@@ -199,7 +201,7 @@ async def start_part_2(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_second_tasks_by_variant(variant_id=variant_id):
+    if tasks := await service.get_second_tasks_by_variant(variant_id=variant_id):
         task = tasks[0]
 
         await bot.send_message(chat_id, TEXT_TASK_2)
@@ -235,7 +237,7 @@ async def handle_second_task(bot: Bot, state: FSMContext):
             type="quiz"
         )
 
-        await state.set_state(ReadingSecondTask.answer)
+        await state.set_state(HSK1ReadingSecondTask.answer)
     else:
         await state.update_data(
             total_score=data["total_score"] + score
@@ -245,7 +247,7 @@ async def handle_second_task(bot: Bot, state: FSMContext):
         await bot.send_message(chat_id=chat_id, text=TEXT_PART_3)
         await start_part_3(bot, state)
 
-@router.poll_answer(ReadingSecondTask.answer)
+@router.poll_answer(HSK1ReadingSecondTask.answer)
 async def handle_second_answer(poll_answer: PollAnswer, state: FSMContext):
     data = await state.get_data()
     score = data["score"]
@@ -267,7 +269,7 @@ async def start_part_3(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_third_tasks_by_variant(variant_id=variant_id):
+    if tasks := await service.get_third_tasks_by_variant(variant_id=variant_id):
         task = tasks[0]
 
         await bot.send_message(chat_id, TEXT_TASK_3)
@@ -305,7 +307,7 @@ async def handle_third_task(bot: Bot, state: FSMContext):
             type="quiz"
         )
 
-        await state.set_state(ReadingThirdTask.answer)
+        await state.set_state(HSK1ReadingThirdTask.answer)
     else:
         await state.update_data(
             total_score=data["total_score"] + score
@@ -314,7 +316,7 @@ async def handle_third_task(bot: Bot, state: FSMContext):
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=5))
         await start_part_4(bot, state)
 
-@router.poll_answer(ReadingThirdTask.answer)
+@router.poll_answer(HSK1ReadingThirdTask.answer)
 async def handle_third_answer(poll_answer: PollAnswer, state: FSMContext):
     data = await state.get_data()
     score = data["score"]
@@ -336,7 +338,7 @@ async def start_part_4(bot: Bot, state: FSMContext):
     variant_id = data["variant_id"]
     chat_id = data["chat_id"]
 
-    if tasks := service.get_fourth_tasks_by_variant(variant_id=variant_id):
+    if tasks := await service.get_fourth_tasks_by_variant(variant_id=variant_id):
         task = tasks[0]
 
         await bot.send_message(chat_id, TEXT_TASK_4)
@@ -374,7 +376,7 @@ async def handle_fourth_task(bot: Bot, state: FSMContext):
             type="quiz"
         )
 
-        await state.set_state(ReadingFourthTask.answer)
+        await state.set_state(HSK1ReadingFourthTask.answer)
     else:
         await state.update_data(
             total_score=data["total_score"] + score
@@ -383,7 +385,7 @@ async def handle_fourth_task(bot: Bot, state: FSMContext):
         await bot.send_message(chat_id=chat_id, text=TEXT_TASK_COMPLETED.format(score=score, total=5))
         await finish_reading(bot, state)
 
-@router.poll_answer(ReadingFourthTask.answer)
+@router.poll_answer(HSK1ReadingFourthTask.answer)
 async def handle_fourth_answer(poll_answer: PollAnswer, state: FSMContext):
     data = await state.get_data()
     score = data["score"]

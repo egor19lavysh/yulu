@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from hsk4.writing.repository import WritingRepository, repository
+from hsk4.writing.repository import WritingRepository, get_writing_repository
 from hsk4.writing.schemas import *
 from hsk4.writing.models import *
 
@@ -8,12 +8,12 @@ from hsk4.writing.models import *
 class WritingService:
     repository: WritingRepository
 
-    def get_writing_variants(self) -> list[WritingVarSchema]:
-        variants = [WritingVarSchema.model_validate(var) for var in self.repository.get_variants()]
+    async def get_writing_variants(self) -> list[WritingVarSchema]:
+        variants = [WritingVarSchema.model_validate(var) for var in await self.repository.get_variants()]
         return variants
 
-    def get_first_tasks_by_variant(self, var_id: int) -> list[FirstTaskSchema]:
-        tasks = self.repository.get_first_tasks_by_variant(variant_id=var_id)
+    async def get_first_tasks_by_variant(self, var_id: int) -> list[FirstTaskSchema]:
+        tasks = await self.repository.get_first_tasks_by_variant(variant_id=var_id)
         orm_tasks = []
 
         for task in tasks:
@@ -26,8 +26,8 @@ class WritingService:
 
         return orm_tasks
 
-    def get_second_task_by_variant(self, var_id: int) -> SecondTaskSchema:
-        task = self.repository.get_second_task_by_variant(variant_id=var_id)
+    async def get_second_task_by_variant(self, var_id: int) -> SecondTaskSchema:
+        task = await self.repository.get_second_task_by_variant(variant_id=var_id)
 
         orm_task = SecondTaskSchema(
             id=task.id,
@@ -38,4 +38,6 @@ class WritingService:
         return orm_task
 
 
-service = WritingService(repository=repository)
+async def get_writing_service():
+    repository = await get_writing_repository()
+    return WritingService(repository=repository)
