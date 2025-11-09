@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     DB_HOST: str = ""
     DB_PORT: str = "5432"
     PRIVATE_GROUP_ID: int
+    SPREADSHEET_ID: str
+    SERVICE_ACCOUNT_FILE: str
 
     @property
     def DB_URL(self):

@@ -14,10 +14,16 @@ from hsk4 import routers as hsk4_routers
 from hsk5 import routers as hsk5_routers
 from subscription import router as sub_router
 
+
+from gsclient import GoogleSheetsClient
+from datetime import datetime
+
+
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 # Объект бота
 bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+gsclient = GoogleSheetsClient(credentials_file=settings.SERVICE_ACCOUNT_FILE, spreadsheet_id=settings.SPREADSHEET_ID)
 
 # Диспетчер
 dp = Dispatcher()
@@ -40,11 +46,24 @@ WELCOME_TEXT = """
 🔹 Используйте команду /levels чтобы выбрать уровень HSK и начать подготовку!
 🔹 Если вы нашли баг или ошибка, то пишите https://t.me/lavingham
     """
-
+ 
 
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    user = message.from_user
+    
+    # Подготавливаем данные пользователя
+    user_data = {
+        'user_id': user.id,
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'registration_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    
+    # Записываем в Google Sheets
+    await gsclient.append_user(user_data)
     await message.answer(WELCOME_TEXT.format(name=message.from_user.username))
 
 
