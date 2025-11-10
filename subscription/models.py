@@ -1,39 +1,26 @@
-from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta, timezone, date
+from enum import Enum
+from typing import Optional
 from database import Base
-from sqlalchemy import Column, DateTime
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy import BigInteger, Boolean, DateTime, Enum as SQLEnum, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
-class User(Base):
-    __tablename__ = "yulu_users"
+class SubscriptionType(str, Enum):
+    TRIAL = "trial"  # Пробная подписка (5 дней)
+    PREMIUM = "premium"  # Платная подписка (30 дней)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str]
-    subscription_expires = Column(DateTime, nullable=True)
-    used_full_variant: Mapped[bool] = mapped_column(default=False)
-    used_listening: Mapped[bool] = mapped_column(default=False)
-    used_reading: Mapped[bool] = mapped_column(default=False)
-    used_writing: Mapped[bool] = mapped_column(default=False)
 
-    @property
-    def is_subscription_active(self):
-        if self.subscription_expires is None:
-            return False
-        return self.subscription_expires > datetime.utcnow()
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False, index=True)
+    sub_type: Mapped[str] = mapped_column(default=SubscriptionType.TRIAL)
+    start_date: Mapped[date]
+    end_date: Mapped[date]
 
     @property
-    def used_trial_subscription(self):
-        if self.used_full_variant or all([self.used_listening, self.used_reading, self.used_writing]):
-            return True
-        return False
-
-    def activate_subscription(self, days=30):
-        if self.subscription_expires and self.subscription_expires > datetime.utcnow():
-            # Продлить существующую подписку
-            self.subscription_expires += timedelta(days=days)
-        else:
-            # Новая подписка
-            self.subscription_expires = datetime.utcnow() + timedelta(days=days)
-
-
+    def is_expired(self) -> bool:
+        return date.today() > self.end_date

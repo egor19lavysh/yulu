@@ -12,16 +12,12 @@ class Settings(BaseSettings):
     PRIVATE_GROUP_ID: int
     SPREADSHEET_ID: str
     SERVICE_ACCOUNT_FILE: str
+    # SHOP_ID: int
+    # YOOKASSA_SECRET_KEY: str
+    PAYMENTS_TOKEN: str
 
     @property
     def DB_URL(self):
-        # # Если есть готовая DATABASE_URL (например, от Railway), используем её
-        # database_url = os.getenv('DATABASE_URL')
-        # if database_url:
-        #     # Railway использует postgres://, а SQLAlchemy требует postgresql://
-        #     return database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
-
-        # Иначе собираем из отдельных параметров
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     model_config = SettingsConfigDict(

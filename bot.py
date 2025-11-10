@@ -13,8 +13,10 @@ from hsk3 import routers as hsk3_routers
 from hsk4 import routers as hsk4_routers
 from hsk5 import routers as hsk5_routers
 from subscription import router as sub_router
-
-
+from subscription.sub_repository import get_sub_repo
+from subscription.models import Subscription, SubscriptionType
+from datetime import date, timedelta
+from middleware import SubscriptionMiddleware
 from gsclient import GoogleSheetsClient
 from datetime import datetime
 
@@ -34,7 +36,7 @@ WELCOME_TEXT = """
 Я помогу вам подготовиться к экзамену HSK по китайскому языку.
 
 📚 <b>Основные функции:</b>
-- Выбор уровня HSK (1-6)
+- Выбор уровня HSK (1-5)
 - Тренировка отдельных навыков:
   🔊 Аудирование
   📖 Чтение
@@ -52,6 +54,18 @@ WELCOME_TEXT = """
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     user = message.from_user
+
+    repo = await get_sub_repo()
+
+    if not await repo.get_by_user_id(message.from_user.id):
+        sub = Subscription(
+            user_id=message.from_user.id,
+            start_date=date.today(),
+            end_date=date.today() + timedelta(days=5)
+        )
+
+        await repo.create(subscription=sub)
+
     
     # Подготавливаем данные пользователя
     user_data = {
@@ -132,7 +146,10 @@ async def main():
 
     dp.include_router(sub_router)
 
-    await dp.start_polling(bot, allowed_updates=["message", "callback_query", "poll_answer"])
+    dp.message.middleware(SubscriptionMiddleware())
+    dp.callback_query.middleware(SubscriptionMiddleware())
+
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
 if __name__ == "__main__":
