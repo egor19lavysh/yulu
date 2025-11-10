@@ -14,22 +14,26 @@ repo = asyncio.run(get_sub_repo())
 
 @router.message(Command("subscribe"))
 async def buy(message: Message):
-    PRICE = LabeledPrice(label="Подписка на 1 месяц (тест)", amount=300*100)
+    PRICE = LabeledPrice(label="Подписка на 1 месяц", amount=300*100)
+
+    if sub := await repo.get_by_user_id(message.from_user.id):
+        await message.answer(f"Ваша подписка все еще активна! Активируйте ее через {(sub.end_date - date.today()).days} дней.")
+    else:
     
-    try:
-        await message.bot.send_invoice(
-            chat_id=message.chat.id,
-            title="Тестовая подписка",
-            description="Тестовая активация подписки на 1 месяц",
-            provider_token=settings.PAYMENTS_TOKEN,
-            currency="RUB",
-            prices=[PRICE],
-            start_parameter="test-subscription",
-            payload=f"test_{message.from_user.id}",
-        )
-    except Exception as e:
-        print(f"Ошибка: {e}")
-        await message.answer("❌ Ошибка создания платежа")
+        try:
+            await message.bot.send_invoice(
+                chat_id=message.chat.id,
+                title="Тестовая подписка",
+                description="Покупая подписку, вы получаете полный и безлимитный доступ доступ на 1 месяц ко всем вариантам экзамена HSK во всех его аспектах (аудирование, чтение и письмо).",
+                provider_token=settings.PAYMENTS_TOKEN,
+                currency="RUB",
+                prices=[PRICE],
+                start_parameter="test-subscription",
+                payload=f"test_{message.from_user.id}",
+            )
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            await message.answer("❌ Ошибка создания платежа")
     
 @router.pre_checkout_query()
 async def pre_checkout_query(pre_checkout_q: PreCheckoutQuery):
@@ -51,7 +55,4 @@ async def successful_payment(message: Message):
 @router.message(Command("status"))
 async def show_subscription_status(message: Message):
     sub = await repo.get_by_user_id(user_id=message.from_user.id)
-    await message.answer((f"Ваша подписка: {sub.sub_type}\n \
-                         Начало: {sub.start_date}\n \
-                         Конец: {sub.end_date}\n \
-                         Статус: {'Истекла' if sub.is_expired else 'Активна'}"))
+    await message.answer(f"Ваша подписка: {sub.sub_type}\nНачало: {sub.start_date}\nКонец: {sub.end_date}\nСтатус: {'Истекла' if sub.is_expired else 'Активна'}")
