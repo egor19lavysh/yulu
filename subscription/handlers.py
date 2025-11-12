@@ -7,6 +7,7 @@ from config import settings
 from .sub_repository import get_sub_repo
 import asyncio
 from datetime import datetime, date
+from .models import SubscriptionType
 
 
 router = Router()
@@ -16,7 +17,7 @@ repo = asyncio.run(get_sub_repo())
 async def buy(message: Message):
     PRICE = LabeledPrice(label="Подписка на 1 месяц", amount=199*100)
 
-    if sub := await repo.get_by_user_id(message.from_user.id):
+    if sub := await repo.get_by_user_id(message.from_user.id) and sub.sub_type != SubscriptionType.TRIAL:
         await message.answer(f"Ваша подписка все еще активна! Активируйте ее через {(sub.end_date - date.today()).days} дней.")
     else:
     
