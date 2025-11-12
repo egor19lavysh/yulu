@@ -14,7 +14,7 @@ repo = asyncio.run(get_sub_repo())
 
 @router.message(Command("subscribe"))
 async def buy(message: Message):
-    PRICE = LabeledPrice(label="Подписка на 1 месяц", amount=300*100)
+    PRICE = LabeledPrice(label="Подписка на 1 месяц", amount=199*100)
 
     if sub := await repo.get_by_user_id(message.from_user.id):
         await message.answer(f"Ваша подписка все еще активна! Активируйте ее через {(sub.end_date - date.today()).days} дней.")

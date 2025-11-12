@@ -5,6 +5,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters.command import Command
 from aiogram.types import BotCommand, Message, KeyboardButton, CallbackQuery
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 
 from config import settings
 from hsk1 import routers as hsk1_routers
@@ -44,8 +46,10 @@ WELCOME_TEXT = """
   📝 Лексика
 - Полноценные пробные тесты
 
+
 🔹 Используйте команду /levels чтобы выбрать уровень HSK и начать подготовку!
-🔹 Если вы нашли баг или ошибка, то пишите https://t.me/lavingham
+🔹 Для оплаты оплаты подписки нажмите /subscribe, а для проверки статуса подписки /status
+🔹 Если вы нашли баг или ошибку, хотите задать вопрос или просто поделиться своим мнением о боте, то можете оставить свой фидбэк /feedback
     """
  
 
@@ -82,7 +86,12 @@ async def cmd_start(message: types.Message):
 
 @dp.message(Command("help"))
 async def cmd_start(message: types.Message):
-    await message.answer(WELCOME_TEXT.format(name=(message.from_user.first_name + " " + message.from_user.last_name)))
+    TEXT = """
+🔹 Используйте команду /levels чтобы выбрать уровень HSK и начать подготовку к экзамену
+🔹 Для оплаты оплаты подписки нажмите /subscribe, а для проверки статуса подписки /status
+🔹 Если вы нашли баг или ошибку, хотите задать вопрос или просто поделиться своим мнением о боте, то можете оставить свой фидбэк /feedback
+"""
+    await message.answer(TEXT)
 
 
 @dp.message(F.audio | F.photo | F.video)
@@ -125,6 +134,34 @@ async def get_levels(msg: Message):
 
     await msg.answer("Какой уровень хотите потренировать?", reply_markup=keyboard)
 
+class FeedbackStates(StatesGroup):
+    feedback = State()
+
+
+@dp.message(Command("feedback"))
+async def give_feedback(message: Message, state: FSMContext):
+    TEXT = "Отправьте фидбэк нашим менеджерам в виде текста.\n\nВы можете оставить фидбэк по абсолютно разным причинам:\n- предложить улучшение\n- задать вопрос\n- написать о проблеме\n\nМы ответим вам в ближайшее время!"
+    await message.answer(TEXT)
+    await state.set_state(FeedbackStates.feedback)
+
+@dp.message(FeedbackStates.feedback)
+async def get_feedback(message: Message, state: FSMContext):
+
+    await message.bot.send_message(
+        chat_id=settings.FEEDBACK_PRIVATE_GROUP_ID,
+        text=f"Пользователь {message.from_user.username} (id={message.from_user.id}) оставил фидбэк:"
+    )
+
+    await message.bot.forward_message(
+        chat_id=settings.FEEDBACK_PRIVATE_GROUP_ID,
+        from_chat_id=message.chat.id,
+        message_id=message.message_id
+    )
+
+    await message.answer("Спасибо за ваш фидбэк! Если возникла какая-то проблема, наши менеджеры с вами скоро свяжутся.")
+    
+    await state.clear()
+    
 
 # Запуск процесса поллинга новых апдейтов
 async def main():

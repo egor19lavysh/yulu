@@ -12,9 +12,8 @@ class Settings(BaseSettings):
     PRIVATE_GROUP_ID: int
     SPREADSHEET_ID: str
     SERVICE_ACCOUNT_FILE: str
-    # SHOP_ID: int
-    # YOOKASSA_SECRET_KEY: str
     PAYMENTS_TOKEN: str
+    FEEDBACK_PRIVATE_GROUP_ID: int
 
     @property
     def DB_URL(self):
