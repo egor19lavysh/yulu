@@ -21,6 +21,10 @@ from datetime import date, timedelta
 from middleware import SubscriptionMiddleware
 from gsclient import GoogleSheetsClient
 from datetime import datetime
+import asyncio
+from dialog import router as dialog_router
+
+repo =  asyncio.run(get_sub_repo())
 
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -33,11 +37,9 @@ gsclient = GoogleSheetsClient(credentials_file=settings.SERVICE_ACCOUNT_FILE, sp
 dp = Dispatcher()
 
 WELCOME_TEXT = """
-<b>Привет, {name}! Я - телеграмм бот Yulu.</b>
+@{name} добро пожаловать в yulu  — твой помощник в подготовке к HSK 🪷
 
-Я помогу вам подготовиться к экзамену HSK по китайскому языку.
-
-📚 <b>Основные функции:</b>
+📚Основные функции:
 - Выбор уровня HSK (1-5)
 - Тренировка отдельных навыков:
   🔊 Аудирование
@@ -46,11 +48,12 @@ WELCOME_TEXT = """
   📝 Лексика
 - Полноценные пробные тесты
 
+🏮考试现在开始! 加油！ 
 
 🔹 Используйте команду /levels чтобы выбрать уровень HSK и начать подготовку!
 🔹 Для оплаты оплаты подписки нажмите /subscribe, а для проверки статуса подписки /status
 🔹 Если вы нашли баг или ошибку, хотите задать вопрос или просто поделиться своим мнением о боте, то можете оставить свой фидбэк /feedback
-    """
+"""
  
 
 # Хэндлер на команду /start
@@ -58,7 +61,7 @@ WELCOME_TEXT = """
 async def cmd_start(message: types.Message):
     user = message.from_user
 
-    repo = await get_sub_repo()
+    
 
     if not await repo.get_by_user_id(message.from_user.id):
         sub = Subscription(
@@ -80,7 +83,7 @@ async def cmd_start(message: types.Message):
     }
     
     # Записываем в Google Sheets
-    await gsclient.append_user(user_data)
+    gsclient.append_user(user_data)
     await message.answer(WELCOME_TEXT.format(name=message.from_user.username))
 
 
@@ -181,6 +184,8 @@ async def main():
         dp.include_router(router)
 
     dp.include_router(sub_router)
+
+    dp.include_router(dialog_router)
 
     dp.message.middleware(SubscriptionMiddleware())
     dp.callback_query.middleware(SubscriptionMiddleware())

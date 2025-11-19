@@ -8,7 +8,7 @@ from .sub_repository import get_sub_repo
 import asyncio
 from datetime import datetime, date
 from .models import SubscriptionType
-
+import json
 
 router = Router()
 repo = asyncio.run(get_sub_repo())
@@ -17,20 +17,45 @@ repo = asyncio.run(get_sub_repo())
 async def buy(message: Message):
     PRICE = LabeledPrice(label="Подписка на 1 месяц", amount=199*100)
 
-    if sub := await repo.get_by_user_id(message.from_user.id) and sub.sub_type != SubscriptionType.TRIAL:
+    sub = await repo.get_by_user_id(message.from_user.id)
+
+    if sub and sub.sub_type != SubscriptionType.TRIAL:
         await message.answer(f"Ваша подписка все еще активна! Активируйте ее через {(sub.end_date - date.today()).days} дней.")
     else:
-    
         try:
             await message.bot.send_invoice(
                 chat_id=message.chat.id,
-                title="Тестовая подписка",
+                title="Оплата подписки",
                 description="Покупая подписку, вы получаете полный и безлимитный доступ доступ на 1 месяц ко всем вариантам экзамена HSK во всех его аспектах (аудирование, чтение и письмо).",
                 provider_token=settings.PAYMENTS_TOKEN,
                 currency="RUB",
                 prices=[PRICE],
-                start_parameter="test-subscription",
-                payload=f"test_{message.from_user.id}",
+                start_parameter="subscription",
+                payload=f"payment_{message.from_user.id}",
+                need_phone_number=True,
+                send_phone_number_to_provider=True,
+                provider_data=json.dumps({
+                "receipt" : {
+                    "customer" : {
+                        "phone" : "79211234567",
+                    },
+                    "items" : [
+                        {
+                            "description" : "Оплата подписки на месяц",
+                            "quantity" : 1,
+                            "amount" : {
+                                "value" : 199,
+                                "currency" : "RUB"
+                        },
+                            "vat_code" : 4,
+                            "payment_mode" : "full_payment",
+                            "payment_subject" : "service"
+                        }
+                    ],
+                    "tax_system_code" : 1
+        }
+    }
+                )
             )
         except Exception as e:
             print(f"Ошибка: {e}")

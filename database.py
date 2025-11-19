@@ -21,21 +21,8 @@ async def get_db_session_async() -> AsyncSession:
     async with AsyncSessionLocal() as session:
         try:
             yield session
-        finally:
-            await session.close()
-
-engine = create_engine(
-    url=settings.DB_URL,
-    echo=True
-)
-
-session_factory = sessionmaker(engine)
-
-
-def get_db_session() -> Session:
-    with session_factory() as session:
-        yield session
-
+        except Exception as e:
+            print(e)
 
 class Base(DeclarativeBase):
     pass

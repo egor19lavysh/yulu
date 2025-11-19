@@ -8,7 +8,7 @@ from subscription.sub_repository import get_sub_repo
 
 
 class SubscriptionMiddleware(BaseMiddleware):
-    ALLOWED_COMMANDS = ['/start', '/subscribe', '/help', '/status']
+    ALLOWED_COMMANDS = ['/start', '/subscribe', '/help', '/status', '/feedback']
     ALLOWED_CONTENT_TYPES = ['successful_payment']
 
     async def __call__(
@@ -22,6 +22,9 @@ class SubscriptionMiddleware(BaseMiddleware):
             return await handler(event, data)
         
         if isinstance(event, Message) and event.text in self.ALLOWED_COMMANDS:
+            return await handler(event, data)
+        
+        if isinstance(event, Message) and handler.__name__ == "get_feedback":
             return await handler(event, data)
         
         # Получаем сессию из данных

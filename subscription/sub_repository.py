@@ -17,6 +17,11 @@ class SubscriptionRepository:
         await self.session.commit()
         await self.session.refresh(subscription)
         return subscription
+    
+    async def get_all_subs(self) -> list[Subscription]:
+        stmt = select(Subscription)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
     async def get_by_user_id(self, user_id: int) -> Optional[Subscription]:
         """Получить подписку по ID пользователя"""

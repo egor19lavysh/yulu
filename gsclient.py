@@ -11,22 +11,18 @@ class GoogleSheetsClient:
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(spreadsheet_id).sheet1
 
-    async def user_exists(self, user_id: int) -> bool:
+    def user_exists(self, user_id: int) -> bool:
         try:
             cell = self.sheet.find(str(user_id))
+            print(cell)
             return cell is None
         except Exception as e:
             return False
     
-    async def append_user(self, data: dict) -> None:
+    def append_user(self, data: dict) -> None:
+        print(data.get("user_id", False))
         if user_id := data.get("user_id", False):
-            if await self.user_exists(user_id=user_id):
-                if not self.sheet.get_all_records():
-                    self.sheet.append_row([
-                        'User ID', 'Username', 'First Name', 'Last Name', 
-                        'Registration Date'
-                    ])
-        
+            if self.user_exists(user_id=user_id):
                     self.sheet.append_row([
                             data['user_id'],
                             data.get('username', ''),
